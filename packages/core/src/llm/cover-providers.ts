@@ -1,4 +1,4 @@
-export type CoverProviderId = "kkaiapi" | "openai" | "google";
+export type CoverProviderId = "pptoken" | "kkaiapi" | "openai" | "google";
 
 export interface CoverProviderPreset {
   readonly service: CoverProviderId;
@@ -10,6 +10,14 @@ export interface CoverProviderPreset {
 }
 
 export const COVER_PROVIDER_PRESETS: readonly CoverProviderPreset[] = [
+  {
+    service: "pptoken",
+    label: "PPToken",
+    baseUrl: "https://api.pptoken.org/v1",
+    api: "images",
+    defaultModel: "gpt-image-2",
+    models: ["gpt-image-2"],
+  },
   {
     service: "kkaiapi",
     label: "kkaiapi",

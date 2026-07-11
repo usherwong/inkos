@@ -498,7 +498,7 @@ async function generateCoverImageArtifact(input: {
   });
   const size = input.coverSize || process.env.INKOS_COVER_SIZE || "1024x1360";
   const { buffer, extension } = await generateImageFromPrompt(request, buildCoverImagePrompt(input.salesPackage, input.promptMode ?? "short"), size);
-  const coverPath = join(input.outputDir, extension === "jpg" ? "cover.jpg" : "cover.png");
+  const coverPath = join(input.outputDir, `cover.${extension}`);
   await writeBinary(input.root, coverPath, buffer);
   return { coverImagePath: projectPath(coverPath) };
 }
@@ -513,7 +513,7 @@ export async function generateImageFromPrompt(
   request: ShortFictionCoverRequest,
   prompt: string,
   size: string,
-): Promise<{ readonly buffer: Buffer; readonly extension: "png" | "jpg" }> {
+): Promise<{ readonly buffer: Buffer; readonly extension: "png" | "jpg" | "webp" }> {
   if (request.api === "gemini") {
     const payload = await generateGeminiCover(request, prompt);
     return { buffer: Buffer.from(payload.base64, "base64"), extension: payload.extension };
@@ -630,12 +630,23 @@ async function resolveProjectCoverApiKey(root: string, service: string): Promise
     || "";
 }
 
+function resolveCoverOutputFormat(): {
+  readonly format: "png" | "jpeg" | "webp";
+  readonly extension: "png" | "jpg" | "webp";
+} {
+  const raw = (process.env.INKOS_COVER_OUTPUT_FORMAT || "png").trim().toLowerCase();
+  if (raw === "jpg" || raw === "jpeg") return { format: "jpeg", extension: "jpg" };
+  if (raw === "webp") return { format: "webp", extension: "webp" };
+  return { format: "png", extension: "png" };
+}
+
 async function generateImagesCover(
   request: ShortFictionCoverRequest,
   prompt: string,
   size: string,
-): Promise<{ readonly buffer: Buffer; readonly extension: "png" | "jpg" }> {
+): Promise<{ readonly buffer: Buffer; readonly extension: "png" | "jpg" | "webp" }> {
   const endpoint = request.endpoint ?? `${request.baseUrl.replace(/\/+$/u, "")}/images/generations`;
+  const { format: outputFormat, extension: outputExtension } = resolveCoverOutputFormat();
   const response = await fetch(endpoint, {
     method: "POST",
     headers: {
@@ -647,6 +658,7 @@ async function generateImagesCover(
       prompt,
       n: 1,
       size,
+      output_format: outputFormat,
     }),
   });
   const text = await response.text();
@@ -665,7 +677,7 @@ async function generateImagesCover(
   if (image?.base64) {
     return {
       buffer: Buffer.from(image.base64, "base64"),
-      extension: image.extension,
+      extension: outputExtension,
     };
   }
   if (image?.url) {

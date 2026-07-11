@@ -166,7 +166,7 @@ export async function writePlayImageSettings(runDir: string, settings: PlayImage
 }
 
 /** Filesystem-safe leaf name derived from an entity id / scene key. */
-export function playImageFileName(key: string, extension: "png" | "jpg"): string {
+export function playImageFileName(key: string, extension: "png" | "jpg" | "webp"): string {
   const safe = key.replace(/[^a-zA-Z0-9_-]/g, "_").slice(0, 80) || "image";
   return `${safe}.${extension}`;
 }

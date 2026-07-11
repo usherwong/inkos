@@ -5,7 +5,7 @@ import type { StoryNode } from "./graph-schema.js";
 import type { StoryGraphDelta } from "./delta.js";
 
 export interface NodeImageDeps {
-  generateImage(prompt: string, size: string): Promise<{ buffer: Buffer; extension: "png" | "jpg" }>;
+  generateImage(prompt: string, size: string): Promise<{ buffer: Buffer; extension: "png" | "jpg" | "webp" }>;
 }
 
 function safeAssetSegment(value: string): string {
