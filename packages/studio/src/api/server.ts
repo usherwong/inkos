@@ -1055,7 +1055,7 @@ function formatAgentFailure(message: string): { readonly code: string; readonly 
     return { code: "AGENT_LLM_ERROR", message, status: 502 };
   }
   if (kind === "internal") {
-    return { code: "AGENT_INTERNAL_ERROR", message: `InkOS 内部流程错误：${message}`, status: 500 };
+    return { code: "AGENT_INTERNAL_ERROR", message: `MythFlow 内部流程错误：${message}`, status: 500 };
   }
   return { code: "AGENT_ERROR", message, status: 500 };
 }
@@ -5780,6 +5780,6 @@ export async function startStudioServer(
     }
   }
 
-  console.log(`InkOS Studio running on http://localhost:${port}`);
+  console.log(`MythFlow Studio running on http://localhost:${port}`);
   serve({ fetch: app.fetch, port });
 }

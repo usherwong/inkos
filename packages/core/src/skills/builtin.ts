@@ -101,7 +101,7 @@ const RAW_BUILTIN_CAPABILITY_SKILLS: CapabilitySkillManifest[] = [
     id: "open-world-play",
     name: "Open World Play",
     description: "Open-world and branching interactive fiction: world contracts, character agents, time semantics, inventory/evidence/relation state, and scene rendering.",
-    whenToUse: "Use for InkOS Play, open worlds, branching interaction, free actions, player persona, world state, character autonomy, and play illustrations.",
+    whenToUse: "Use for MythFlow Play, open worlds, branching interaction, free actions, player persona, world state, character autonomy, and play illustrations.",
     triggers: [
       "开放世界",
       "分支互动",

@@ -521,8 +521,8 @@ function looksLikeChapterRevisionPlan(text: string): boolean {
 
 function bookRawChapterBoundaryText(language: string): string {
   return language === "zh"
-    ? "这次模型输出了疑似章节正文的聊天文本，但没有调用落盘工具。InkOS 不会把聊天正文当成已保存章节：如果要续写新章，请发送“继续写下一章”；如果要修改旧章，请发送“重写/修订第 N 章 + 具体要求”，系统会走 reviser/writer 管线落盘。"
-    : "The model produced chapter-like prose in chat without calling a persistence tool. InkOS will not treat chat prose as a saved chapter. Ask to write the next chapter only when you want to append; ask to rewrite/revise chapter N with concrete requirements when you want to change existing chapters.";
+    ? "这次模型输出了疑似章节正文的聊天文本，但没有调用落盘工具。MythFlow 不会把聊天正文当成已保存章节：如果要续写新章，请发送“继续写下一章”；如果要修改旧章，请发送“重写/修订第 N 章 + 具体要求”，系统会走 reviser/writer 管线落盘。"
+    : "The model produced chapter-like prose in chat without calling a persistence tool. MythFlow will not treat chat prose as a saved chapter. Ask to write the next chapter only when you want to append; ask to rewrite/revise chapter N with concrete requirements when you want to change existing chapters.";
 }
 
 function replaceAssistantText(message: AssistantMessage, text: string): void {
@@ -567,7 +567,7 @@ function convertAgentMessagesForModel(messages: AgentMessage[], model: Model<Api
   });
 
   const candidate = model as { api?: unknown; baseUrl?: unknown };
-  // InkOS's internal `toolResult` role is not part of the OpenAI Chat Completions spec.
+  // MythFlow's internal `toolResult` role is not part of the OpenAI Chat Completions spec.
   // Many openai-completions upstreams (Google, and kkaiapi/DeepSeek-Pro-style gateways) reject
   // it outright — which surfaces as an opaque "503 provider temporarily unavailable" — so fold
   // tool results into a plain user message for EVERY openai-completions endpoint, not just Google.

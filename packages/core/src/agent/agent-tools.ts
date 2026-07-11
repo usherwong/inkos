@@ -86,7 +86,7 @@ const SuggestedActionParam = Type.Union([
     text: Type.Optional(Type.String({ description: "Concrete action text." })),
     title: Type.Optional(Type.String({ description: "Short action title." })),
     description: Type.Optional(Type.String({ description: "Optional action description." })),
-  }, { description: "A model may describe an action as an object; InkOS will normalize it to one short action string." }),
+  }, { description: "A model may describe an action as an object; MythFlow will normalize it to one short action string." }),
 ], { description: "Suggested action as a string or small action object." });
 
 type SuggestedActionParamType = Static<typeof SuggestedActionParam>;
@@ -285,9 +285,9 @@ function proposedActionFallbackTitle(action: ProposeActionParamsType["action"], 
     case "create_book":
       return isZh ? "创建长篇书籍" : "Create a long-form book";
     case "short_run":
-      return isZh ? "生成 InkOS Short" : "Generate InkOS Short";
+      return isZh ? "生成 MythFlow Short" : "Generate MythFlow Short";
     case "play_start":
-      return isZh ? "启动 InkOS Play" : "Start InkOS Play";
+      return isZh ? "启动 MythFlow Play" : "Start MythFlow Play";
     case "generate_cover":
       return isZh ? "生成封面" : "Generate cover";
     case "fanfic_init":
@@ -317,11 +317,11 @@ function proposedActionFallbackSummary(action: ProposeActionParamsType["action"]
   if (proposedActionTargetRoute(action)) {
     return isZh
       ? "确认后只会打开现有 Studio 工具，不会直接生成成品。"
-      : "After confirmation, InkOS will only open the existing Studio tool; it will not generate finished content directly.";
+      : "After confirmation, MythFlow will only open the existing Studio tool; it will not generate finished content directly.";
   }
   return isZh
     ? "确认后会切换到对应入口并执行这条需求。"
-    : "After confirmation, InkOS will switch to the matching surface and run this request.";
+    : "After confirmation, MythFlow will switch to the matching surface and run this request.";
 }
 
 function compactObject<T extends Record<string, unknown>>(value: T | undefined): T | undefined {
@@ -552,7 +552,7 @@ const ArchitectCreateSubAgentParams = Type.Object({
   agent: Type.Literal("architect"),
   instruction: Type.String({ description: "Confirmed self-contained book-creation instruction for the architect." }),
   bookId: Type.Optional(Type.String({
-    description: "Optional new book ID. Usually omit it and let InkOS derive the ID from title.",
+    description: "Optional new book ID. Usually omit it and let MythFlow derive the ID from title.",
   })),
   title: Type.Optional(Type.String({ description: "Confirmed book title. Required when creating a book." })),
   genre: Type.Optional(Type.String({ description: "Confirmed book genre." })),
@@ -596,7 +596,7 @@ export function createSubAgentTool(
   return {
     name: "sub_agent",
     description: options.architectCreateOnly
-      ? "Create a new long-form InkOS book foundation. This confirmation turn can only call agent='architect'; writing chapters happens after the session is bound to the created book."
+      ? "Create a new long-form MythFlow book foundation. This confirmation turn can only call agent='architect'; writing chapters happens after the session is bound to the created book."
       : "Delegate a heavy operation to a specialised sub-agent. " +
         "Use agent='architect' to initialise a new book, 'writer' to write the next chapter, " +
         "'auditor' to audit quality, 'reviser' to revise a chapter, 'exporter' to export.",
@@ -1011,7 +1011,7 @@ export function createRetrieveMaterialTool(projectRoot: string): AgentTool<typeo
     name: "retrieve_material",
     description:
       "Retrieve traceable snippets from previously ingested .inkos/materials reference cards. " +
-      "The agent supplies the semantic query; InkOS returns evidence pointers. This must not mutate canon, chapters, scripts, or play state.",
+      "The agent supplies the semantic query; MythFlow returns evidence pointers. This must not mutate canon, chapters, scripts, or play state.",
     label: "Retrieve Material",
     parameters: RetrieveMaterialParams,
     async execute(
@@ -1624,7 +1624,7 @@ export function createPlayStartTool(
   return {
     name: "play_start",
     description:
-      "Start an interactive InkOS Play world directly from chat. " +
+      "Start an interactive MythFlow Play world directly from chat. " +
       "Use when the user asks to play, roleplay, run an open-world interactive story, or start a Tavern-like scene.",
     label: "Start Play",
     parameters: PlayStartParams,
@@ -1866,7 +1866,7 @@ export function createPlayEditTool(
   return {
     name: "play_edit",
     description:
-      "Persistently edit the active InkOS Play world card, visual contract, player persona, or entity/role cards without advancing time or narrating a turn. " +
+      "Persistently edit the active MythFlow Play world card, visual contract, player persona, or entity/role cards without advancing time or narrating a turn. " +
       "Use when the user says to change world rules, visual rules, character goals/persona/status, or long-lived play contracts.",
     label: "Edit Play World",
     parameters: PlayEditParams,
@@ -1961,7 +1961,7 @@ export function createPlayStepTool(
   return {
     name: "play_step",
     description:
-      "Advance the current InkOS Play world by one player action. " +
+      "Advance the current MythFlow Play world by one player action. " +
       "Use after play_start when the user keeps acting in the interactive scene.",
     label: "Play Step",
     parameters: PlayStepParams,
@@ -2053,7 +2053,7 @@ export function createPlayReviseTool(
   return {
     name: "play_revise",
     description:
-      "Regenerate, edit, or restore the latest InkOS Play turn using saved turn checkpoints. " +
+      "Regenerate, edit, or restore the latest MythFlow Play turn using saved turn checkpoints. " +
       "Use when the user says to redo the previous turn, try another version, swipe, or replace their last player input.",
     label: "Revise Play Turn",
     parameters: PlayReviseParams,

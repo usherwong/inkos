@@ -290,7 +290,7 @@ export function Sidebar({ nav, activePage, sse, t }: {
         >
           <InkosLogo className="w-11 h-11 shrink-0 group-hover:scale-105 transition-transform" />
           <div className="flex flex-col">
-            <span className="font-serif text-[27px] leading-none italic font-medium">InkOS</span>
+            <span className="font-serif text-[27px] leading-none italic font-medium">MythFlow</span>
             <span className="text-[13px] uppercase tracking-[0.22em] text-muted-foreground font-bold mt-1.5">Studio</span>
           </div>
         </button>
@@ -298,7 +298,7 @@ export function Sidebar({ nav, activePage, sse, t }: {
 
       {/* Main Navigation */}
       <div className="flex-1 overflow-y-auto px-4 py-2 space-y-6">
-        {/* InkOS Create Section — always visible, two columns. */}
+        {/* MythFlow Create Section — always visible, two columns. */}
         <div>
           <div className="px-3 mb-2.5">
             <span className="text-[16px] leading-6 uppercase tracking-[0.1em] text-muted-foreground font-bold">
