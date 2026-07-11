@@ -15,11 +15,32 @@ async function tryReadFile(path: string): Promise<string | null> {
   }
 }
 
+async function findGenreByDisplayName(dir: string, genreName: string): Promise<string | null> {
+  try {
+    const files = await readdir(dir);
+    for (const file of files) {
+      if (!file.endsWith(".md")) continue;
+      const raw = await tryReadFile(join(dir, file));
+      if (!raw) continue;
+      try {
+        if (parseGenreProfile(raw).profile.name === genreName) return raw;
+      } catch {
+        // not a valid genre profile — skip
+      }
+    }
+  } catch {
+    // directory missing
+  }
+  return null;
+}
+
 /**
  * Load genre profile. Lookup order:
  * 1. Project-level: {projectRoot}/genres/{genreId}.md
  * 2. Built-in:     packages/core/genres/{genreId}.md
- * 3. Fallback:     built-in other.md
+ * 3. Display-name match（chat 流程常传中文体裁名如"仙侠"，而内置文件名是英文 slug）:
+ *    project genres dir, then built-in
+ * 4. Fallback:     built-in other.md
  */
 export async function readGenreProfile(
   projectRoot: string,
@@ -32,6 +53,8 @@ export async function readGenreProfile(
   const raw =
     (await tryReadFile(projectPath)) ??
     (await tryReadFile(builtinPath)) ??
+    (await findGenreByDisplayName(join(projectRoot, "genres"), genreId)) ??
+    (await findGenreByDisplayName(BUILTIN_GENRES_DIR, genreId)) ??
     (await tryReadFile(fallbackPath));
 
   if (!raw) {
