@@ -44,6 +44,7 @@ function buildChatPrompt(isZh: boolean): string {
 辅助入口是“打开工具并准备材料”，不是立即生成成品。用户明确提到“同人 / 续写 / 番外 / 仿写 / 文风分析 / 参考文风 / 模仿笔法 / 先分析再仿写”时，必须调用 propose_action，不要用普通文字追问书名、原文、父书路径或解释流程。材料缺失时从用户方向临时概括一个短标题，instruction 里写清“待用户在入口补充材料”。映射：同人=fanfic_init，续写=continuation_import，番外/正典资料/不进入主线=spinoff_create，仿写/文风分析/参考文风/模仿笔法=style_imitation。确认卡标题/摘要必须说“打开入口 / 准备材料”，不要说“直接生成成品”。
 
 调用 propose_action 时，instruction 必须自包含：写清目标入口、标题/书名/路径、故事或视觉方向、用户提到的关键上下文；不要让下一条 session 依赖上一轮聊天上下文猜。能确定的执行参数必须同时填进结构化字段：createBook / shortRun / playStart / generateCover / scriptCreate / storyboardCreate / interactiveFilmCreate，不要只写在 instruction 文本里。互动世界如果用户说“开放世界/自由玩/自己行动”，playStart.mode 填 open；如果用户说“分支互动/点着玩/给选项”，playStart.mode 填 guided。互动影游/互动剧/影游交付/盛世天下式多结局剧本，使用 interactive_film_create，不要路由到 play_start。
+项目内已有的创作内容可以直接作为素材引用，不要要求用户上传或粘贴：长篇在 books/<书名>/（章节 chapters/*.md，设定 story/*.md），短篇在 shorts/<题名>/final/full.md。用户提到"用我的某本书/某篇短篇当素材"时，先用 ls / read 在项目内定位确认，再把项目相对路径填进对应动作的 sourcePath（如 interactiveFilmCreate.sourcePath）。用户给出的绝对路径（如 ~/Documents/...）通常就是项目根目录本身，换算成项目相对路径处理即可，不要回答"无法访问本地路径"。
 信息不足时只问一个关键问题。不要在 chat 里创建、写入、编辑或生成故事/图片产物；research_web、ingest_material 和 retrieve_material 只处理参考材料除外。
 
 ${commonOutputRules(true)}`
@@ -58,6 +59,7 @@ Assisted workflow actions: fanfic_init, continuation_import, spinoff_create, sty
 Assisted workflows open a tool and prepare materials; they do not immediately generate finished content. When the user explicitly asks for fanfiction, continuation, side-story/spinoff, style imitation, style analysis, reference-style analysis, prose mimicry, or "analyze first then imitate", you must call propose_action. Do not answer by asking for a title/source text/parent-book path or by explaining the workflow in plain text. If materials are missing, infer a short temporary title from the user's direction, and say in the instruction that the user will fill missing materials in the opened tool. Mapping: fanfiction=fanfic_init, continuation=continuation_import, side-story/spinoff/canon-materials=spinoff_create, style imitation/style analysis/reference-style/prose mimicry=style_imitation. The confirmation card title/summary must say "open workflow / prepare materials"; do not say finished content will be generated.
 
 When calling propose_action, instruction must be self-contained: include target surface, title/book/path, story or visual direction, and concrete context behind references like "that book" or "this cover". Do not make the next session infer missing context from this chat. Put known execution arguments into the structured createBook / shortRun / playStart / generateCover / scriptCreate / storyboardCreate / interactiveFilmCreate fields as well; do not leave them only in instruction text. For interactive worlds, set playStart.mode=open when the user asks for open/free-form play, and playStart.mode=guided when the user asks for branching/choice-led play. For interactive film/drama/game-script deliverables with branch logic, flags, endings, scripts, and storyboards, use interactive_film_create instead of play_start.
+Existing works inside the project are directly usable as source material — never ask the user to upload or paste them: long-form books live at books/<title>/ (chapters in chapters/*.md, worldbuilding in story/*.md), short fiction at shorts/<title>/final/full.md. When the user references "my book/short" as material, locate it with ls / read first, then pass the project-relative path in the action's sourcePath field (e.g. interactiveFilmCreate.sourcePath). An absolute path the user gives (like ~/Documents/...) is usually the project root itself — translate it to a project-relative path instead of replying "cannot access local paths".
 If information is missing, ask one key question. Do not create, write, edit, or generate story/image artifacts in chat; research_web, ingest_material, and retrieve_material are reference-material-only exceptions.
 
 ${commonOutputRules(false)}`;
@@ -281,12 +283,14 @@ function buildInteractiveFilmPrompt(isZh: boolean, confirmed: boolean): string {
       ? `你是 MythFlow 互动影游创作助手。用户已经点击确认创建互动影游。
 
 唯一动作：立即调用 interactive_film_create，写入 interactive-films/ 下的互动规格、剧情树、变量旗标、互动剧本、分镜、图像提示词和图片资产 manifest。
+若指令引用了项目内已有作品（长篇 books/<书名>/chapters/*.md、短篇 shorts/<题名>/final/full.md），先用 ls / read 确认存在，把项目相对路径填入 sourcePath，不要要求用户上传。
 不要先输出正文、解释或流程说明；不要启动 Play 世界，不要创建普通剧本或普通分镜。
 
 ${commonOutputRules(true)}`
       : `You are the MythFlow interactive-film creation assistant. The user has confirmed interactive-film creation.
 
 Only action: immediately call interactive_film_create to write interactive spec, story tree, variables/flags, interactive script, storyboard, image prompts, and asset manifest under interactive-films/.
+If the instruction references an existing work in this project (books/<title>/chapters/*.md, shorts/<title>/final/full.md), verify it with ls / read and pass the project-relative path as sourcePath instead of asking the user to upload.
 Do not write the content, explanation, or workflow notes first; do not start a Play world or create a plain script/storyboard instead.
 
 ${commonOutputRules(false)}`;

@@ -1228,7 +1228,7 @@ const ScriptCreateParams = Type.Object({
     description: "User-provided source text. For long sources, prefer sourcePath instead of summarizing.",
   })),
   sourcePath: Type.Optional(Type.String({
-    description: "Optional project-relative source file path.",
+    description: "Optional project-relative source file path, e.g. books/<title>/chapters/0001.md or shorts/<title>/final/full.md for existing works in this project.",
   })),
   requirements: Type.Optional(Type.String({
     description: "Confirmed script format, production constraints, tone, episode structure, or user preferences.",
@@ -1312,7 +1312,7 @@ const StoryboardCreateParams = Type.Object({
     description: "User-provided source text. For long sources, prefer sourcePath instead of summarizing.",
   })),
   sourcePath: Type.Optional(Type.String({
-    description: "Optional project-relative source file path.",
+    description: "Optional project-relative source file path, e.g. books/<title>/chapters/0001.md or shorts/<title>/final/full.md for existing works in this project.",
   })),
   requirements: Type.Optional(Type.String({
     description: "Confirmed shot/storyboard requirements.",
@@ -1405,7 +1405,7 @@ const InteractiveFilmCreateParams = Type.Object({
     description: "User-provided source text. For long sources, prefer sourcePath instead of summarizing.",
   })),
   sourcePath: Type.Optional(Type.String({
-    description: "Optional project-relative source file path.",
+    description: "Optional project-relative source file path, e.g. books/<title>/chapters/0001.md or shorts/<title>/final/full.md for existing works in this project.",
   })),
   requirements: Type.Optional(Type.String({
     description: "Confirmed branching, variable/flag, ending, production, visual, or market requirements.",
