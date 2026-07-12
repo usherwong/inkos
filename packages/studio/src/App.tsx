@@ -172,7 +172,7 @@ export function App() {
                className="inline-flex items-center gap-2 rounded-lg border border-border/50 bg-card/70 px-3.5 py-2 text-[17px] font-semibold text-foreground hover:bg-secondary/50 transition-colors"
              >
                <House size={18} />
-               <span>首页</span>
+               <span>{t("nav.home")}</span>
                <span className="text-muted-foreground/70">/</span>
                <span className="font-serif">MythFlow Studio</span>
              </button>

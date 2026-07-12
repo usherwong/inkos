@@ -436,7 +436,7 @@ export function Sidebar({ nav, activePage, sse, t }: {
 
         {/* 互动影游 Section */}
         <div data-testid="film-projects-section">
-          <SectionHeader label="互动影游" expanded={filmsExpanded} onToggle={() => setFilmsExpanded((v) => !v)} />
+          <SectionHeader label={t("nav.filmsSection")} expanded={filmsExpanded} onToggle={() => setFilmsExpanded((v) => !v)} />
           <Collapse open={filmsExpanded}>
             <div className="space-y-0.5 pt-1">
               {films.map((film) => (
@@ -453,7 +453,7 @@ export function Sidebar({ nav, activePage, sse, t }: {
               ))}
               {films.length === 0 && (
                 <div className="px-3 py-6 text-xs text-muted-foreground/50 italic text-center">
-                  还没有互动影游项目
+                  {t("nav.filmsEmpty")}
                 </div>
               )}
             </div>
