@@ -1201,7 +1201,7 @@ export function ChatPage({ activeBookId, mode = activeBookId ? "book" : "book-cr
                 ) : (
                   <button
                     onClick={() => nav.toServices()}
-                    className="text-[15px] text-muted-foreground/50 hover:text-primary transition-colors"
+                    className="text-[15px] font-medium text-primary border border-primary/40 rounded-lg px-3 py-1 hover:bg-primary/10 transition-colors animate-pulse"
                   >
                     配置模型 →
                   </button>

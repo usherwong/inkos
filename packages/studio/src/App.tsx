@@ -28,6 +28,7 @@ import { useSSE } from "./hooks/use-sse";
 import { useSessionEvents } from "./hooks/use-session-events";
 import { useTheme } from "./hooks/use-theme";
 import { useI18n } from "./hooks/use-i18n";
+import { BRAND_FULL } from "./lib/brand";
 import { postApi, putApi, useApi } from "./hooks/use-api";
 import { Sun, Moon } from "lucide-react";
 import { House } from "lucide-react";
@@ -174,7 +175,7 @@ export function App() {
                <House size={18} />
                <span>{t("nav.home")}</span>
                <span className="text-muted-foreground/70">/</span>
-               <span className="font-serif">MythFlow Studio</span>
+               <span className="font-serif">{BRAND_FULL}</span>
              </button>
           </div>
 

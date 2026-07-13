@@ -48,6 +48,7 @@ import {
   Film,
 } from "lucide-react";
 import { InkosLogo } from "./InkosLogo";
+import { BRAND_NAME, BRAND_SUB } from "../lib/brand";
 
 // 历史记录里的会话混装多种类型（chat / short / play / book-create），用图标区分。
 function SessionKindIcon({ kind, className }: { readonly kind?: string; readonly className?: string }) {
@@ -290,8 +291,8 @@ export function Sidebar({ nav, activePage, sse, t }: {
         >
           <InkosLogo className="w-11 h-11 shrink-0 group-hover:scale-105 transition-transform" />
           <div className="flex flex-col">
-            <span className="font-serif text-[27px] leading-none italic font-medium">MythFlow</span>
-            <span className="text-[13px] uppercase tracking-[0.22em] text-muted-foreground font-bold mt-1.5">Studio</span>
+            <span className="font-serif text-[27px] leading-none italic font-medium">{BRAND_NAME}</span>
+            <span className="text-[13px] uppercase tracking-[0.22em] text-muted-foreground font-bold mt-1.5">{BRAND_SUB}</span>
           </div>
         </button>
       </div>

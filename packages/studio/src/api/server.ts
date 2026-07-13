@@ -5770,9 +5770,16 @@ export async function startStudioServer(
     });
 
     // SPA fallback — serve index.html for all non-API routes
+    // 品牌注入:壳通过 INKOS_BRAND 环境变量声明发行品牌(cn=幻境工坊/en=MythFlow),
+    // 服务端把它写进 window.__BRAND__ 并同步替换 <title>,前端据此渲染品牌位。
     const indexPath = joinPath(options.staticDir!, "index.html");
     if (existsSync(indexPath)) {
-      const indexHtml = await readFileFs(indexPath, "utf-8");
+      const rawIndexHtml = await readFileFs(indexPath, "utf-8");
+      const brand = process.env.INKOS_BRAND === "cn" ? "cn" : "en";
+      const indexHtml = (brand === "cn"
+        ? rawIndexHtml.replace("<title>MythFlow Studio</title>", "<title>幻境工坊 · 工作台</title>")
+        : rawIndexHtml
+      ).replace("</head>", `<script>window.__BRAND__=${JSON.stringify(brand)};</script></head>`);
       app.get("*", (c) => {
         if (c.req.path.startsWith("/api/v1/")) return c.notFound();
         return c.html(indexHtml);

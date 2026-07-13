@@ -396,7 +396,7 @@ export const createMessageSlice: StateCreator<ChatStore, [], [], MessageActions>
 
     if (!get().selectedModel) {
       get().addUserMessage(sessionId, formatUserMessageForDisplay(userInstruction, attachments));
-      get().addErrorMessage(sessionId, "请先选择一个模型");
+      get().addErrorMessage(sessionId, "还没有配置 AI 模型 —— 点击输入框下方的「配置模型 →」完成设置后即可开始创作");
       return;
     }
 
