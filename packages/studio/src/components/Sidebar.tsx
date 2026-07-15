@@ -306,7 +306,7 @@ export function Sidebar({ nav, activePage, sse, t }: {
               {t("nav.createSection")}
             </span>
           </div>
-          <div className="grid grid-cols-2 gap-1">
+          <div className="grid grid-cols-2 gap-1 items-stretch">
             <CreateItem icon={<BookPlus size={16} />} label={t("nav.createNovel")} active={activePage === "book-create"} onClick={handleOpenBookCreate} />
             <CreateItem icon={<ScrollText size={16} />} label={t("nav.createShort")} onClick={() => launchProjectMode("short")} />
             <CreateItem icon={<Clapperboard size={16} />} label={t("nav.createScript")} onClick={() => launchProjectMode("script")} />
@@ -418,7 +418,7 @@ export function Sidebar({ nav, activePage, sse, t }: {
                         className="w-full flex items-center gap-2 pl-9 pr-2 py-1.5 text-[13px] text-muted-foreground/50 hover:text-foreground transition-colors"
                       >
                         <Plus size={12} />
-                        <span>新建会话</span>
+                        <span>{t("nav.newSession")}</span>
                       </button>
                     </div>
                   </Collapse>
@@ -543,7 +543,7 @@ export function Sidebar({ nav, activePage, sse, t }: {
                     className="w-full flex items-center gap-2 pl-2 pr-2 py-1.5 text-[13px] text-muted-foreground/50 hover:text-foreground transition-colors"
                   >
                     <Plus size={12} />
-                    <span>新建会话</span>
+                    <span>{t("nav.newSession")}</span>
                   </button>
                 </div>
               </Collapse>
@@ -777,14 +777,14 @@ function CreateItem({ icon, label, active, onClick }: {
     <button
       type="button"
       onClick={onClick}
-      className={`flex min-w-0 items-center gap-2 rounded-lg px-2.5 py-2.5 text-left text-[16px] leading-6 transition-all ${
+      className={`flex min-h-[46px] min-w-0 items-center gap-2 rounded-lg px-2.5 py-2.5 text-left text-[13px] leading-tight transition-all ${
         active
           ? "border border-border bg-secondary text-foreground font-medium shadow-sm"
           : "text-muted-foreground hover:bg-secondary/50 hover:text-foreground"
       }`}
     >
       <span className={`shrink-0 ${active ? "text-primary" : ""}`}>{icon}</span>
-      <span className="truncate">{label}</span>
+      <span className="whitespace-normal break-words leading-tight">{label}</span>
     </button>
   );
 }
