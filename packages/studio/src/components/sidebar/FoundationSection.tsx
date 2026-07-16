@@ -3,7 +3,8 @@ import { FileText } from "lucide-react";
 import { useChatStore } from "../../store/chat";
 import { fetchJson } from "../../hooks/use-api";
 import { SidebarCard } from "./SidebarCard";
-import { FOUNDATION_FILE_LABELS, FOUNDATION_FILE_ORDER } from "../../lib/truth-display";
+import type { TFunction } from "../../hooks/use-i18n";
+import { FOUNDATION_FILE_LABELS, FOUNDATION_FILE_ORDER, foundationFileLabel } from "../../lib/truth-display";
 
 interface TruthFileInfo {
   name: string;
@@ -16,9 +17,11 @@ interface TruthFileInfo {
 
 interface FoundationSectionProps {
   readonly bookId: string;
+  readonly t: TFunction;
 }
 
-export function FoundationSection({ bookId }: FoundationSectionProps) {
+export function FoundationSection({ bookId, t }: FoundationSectionProps) {
+  const lang: "zh" | "en" = t("nav.connected") === "已连接" ? "zh" : "en";
   const [files, setFiles] = useState<ReadonlyArray<TruthFileInfo>>([]);
   const openArtifact = useChatStore((s) => s.openArtifact);
   const bookDataVersion = useChatStore((s) => s.bookDataVersion);
@@ -36,7 +39,7 @@ export function FoundationSection({ bookId }: FoundationSectionProps) {
   if (available.length === 0) return null;
 
   return (
-    <SidebarCard title="核心文件">
+    <SidebarCard title={t("book.coreFiles")}>
       <ul className="space-y-1">
         {available.map((item) => (
           <li key={item.name}>
@@ -45,7 +48,7 @@ export function FoundationSection({ bookId }: FoundationSectionProps) {
               className="w-full flex items-center gap-2 px-2 py-2 rounded-lg text-[15px] leading-6 font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors font-['SimSun','Songti_SC','STSong',serif]"
             >
               <FileText size={16} className="shrink-0 text-muted-foreground/60" />
-              <span className="truncate">{FOUNDATION_FILE_LABELS[item.name]}</span>
+              <span className="truncate">{foundationFileLabel(item.name, lang)}</span>
             </button>
           </li>
         ))}

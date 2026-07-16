@@ -14,38 +14,39 @@ import {
   Check,
 } from "lucide-react";
 import { buildApiUrl } from "../../hooks/use-api";
+import { useI18n, type TFunction } from "../../hooks/use-i18n";
 import { chatSelectors, useChatStore } from "../../store/chat";
 
 // -- Status rendering helpers --
 
-function ExecStatusBadge({ status }: { status: ToolExecution["status"] }) {
+function ExecStatusBadge({ status, t }: { status: ToolExecution["status"]; t: TFunction }) {
   switch (status) {
     case "running":
       return (
         <span className="inline-flex items-center gap-1 text-xs text-primary">
           <Loader2 size={12} className="animate-spin" />
-          <span>执行中</span>
+          <span>{t("chat.execRunning")}</span>
         </span>
       );
     case "processing":
       return (
         <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
           <Loader2 size={12} className="animate-spin" style={{ animationDuration: "2s" }} />
-          <span>处理结果</span>
+          <span>{t("chat.execProcessing")}</span>
         </span>
       );
     case "completed":
       return (
         <span className="inline-flex items-center gap-1 text-xs text-green-600 dark:text-green-400">
           <CheckCircle2 size={12} />
-          <span>已完成</span>
+          <span>{t("chat.execDone")}</span>
         </span>
       );
     case "error":
       return (
         <span className="inline-flex items-center gap-1 text-xs text-destructive">
           <XCircle size={12} />
-          <span>失败</span>
+          <span>{t("chat.execFailed")}</span>
         </span>
       );
   }
@@ -62,9 +63,9 @@ function StageIcon({ status }: { status: PipelineStage["status"] }) {
   }
 }
 
-function formatProgress(progress: NonNullable<PipelineStage["progress"]>): string {
+function formatProgress(progress: NonNullable<PipelineStage["progress"]>, isZh: boolean): string {
   const secs = Math.round(progress.elapsedMs / 1000);
-  const statusLabel = progress.status === "thinking" ? "思考中" : progress.status ?? "";
+  const statusLabel = progress.status === "thinking" ? (isZh ? "思考中" : "Thinking") : progress.status ?? "";
   const chars = progress.totalChars > 0
     ? progress.chineseChars > 0 ? `${progress.totalChars}字` : `${progress.totalChars} chars`
     : "";
@@ -219,7 +220,8 @@ export function getGeneratedArtifactDetails(exec: ToolExecution): GeneratedArtif
   };
 }
 
-function ScriptStoryboardResultPreview({ exec, onOpenFilmStudio }: { exec: ToolExecution; onOpenFilmStudio?: (projectId: string) => void }) {
+function ScriptStoryboardResultPreview({ exec, onOpenFilmStudio, t }: { exec: ToolExecution; onOpenFilmStudio?: (projectId: string) => void; t: TFunction }) {
+  const isZh = t("nav.connected") === "已连接";
   const openProjectArtifact = useChatStore((s) => s.openProjectArtifact);
   if (!["script_create", "storyboard_create", "interactive_film_create"].includes(exec.tool) || exec.status !== "completed") return null;
   const details = getGeneratedArtifactDetails(exec);
@@ -229,14 +231,14 @@ function ScriptStoryboardResultPreview({ exec, onOpenFilmStudio }: { exec: ToolE
     && details.kind !== "interactive_film_created"
   )) return null;
   const maybeRows: Array<readonly [string, string] | null> = [
-    details.specPath ? ["规格", details.specPath] : null,
-    details.storyGraphPath ? ["剧情图谱", details.storyGraphPath] : null,
-    details.storyTreePath ? ["剧情树", details.storyTreePath] : null,
-    details.flagsPath ? ["变量旗标", details.flagsPath] : null,
-    details.scriptPath ? ["剧本", details.scriptPath] : null,
-    details.storyboardPath ? ["分镜", details.storyboardPath] : null,
-    details.imagePromptsPath ? ["图像提示词", details.imagePromptsPath] : null,
-    details.assetsManifestPath ? ["图片资产", details.assetsManifestPath] : null,
+    details.specPath ? [t("chat.specFile"), details.specPath] : null,
+    details.storyGraphPath ? [t("chat.storyGraphFile"), details.storyGraphPath] : null,
+    details.storyTreePath ? [t("chat.storyTreeFile"), details.storyTreePath] : null,
+    details.flagsPath ? [t("chat.flagsFile"), details.flagsPath] : null,
+    details.scriptPath ? [t("chat.scriptFile"), details.scriptPath] : null,
+    details.storyboardPath ? [t("chat.storyboardFile"), details.storyboardPath] : null,
+    details.imagePromptsPath ? [t("chat.imagePromptsFile"), details.imagePromptsPath] : null,
+    details.assetsManifestPath ? [t("chat.assetsFile"), details.assetsManifestPath] : null,
   ];
   const rows = maybeRows.filter((row): row is readonly [string, string] => Boolean(row));
   if (rows.length === 0 && !(details.kind === "interactive_film_created" && details.projectId)) return null;
@@ -244,7 +246,7 @@ function ScriptStoryboardResultPreview({ exec, onOpenFilmStudio }: { exec: ToolE
     <div className="mx-3 mb-3 mt-1 rounded-xl border border-primary/20 bg-primary/5 px-3 py-2.5">
       <div className="flex items-center justify-between gap-3">
         <div className="text-[16px] leading-6 font-semibold text-primary">
-          {details.kind === "script_created" ? "剧本已生成" : details.kind === "storyboard_created" ? "分镜已生成" : "互动影游已生成"}
+          {details.kind === "script_created" ? t("chat.scriptCreated") : details.kind === "storyboard_created" ? t("chat.storyboardCreated") : t("chat.filmCreated")}
         </div>
         {details.kind === "interactive_film_created" && details.projectId && onOpenFilmStudio && (
           <button
@@ -253,7 +255,7 @@ function ScriptStoryboardResultPreview({ exec, onOpenFilmStudio }: { exec: ToolE
             onClick={() => onOpenFilmStudio(details.projectId!)}
             className="shrink-0 rounded-lg bg-primary px-3 py-1 text-[13px] font-semibold text-primary-foreground hover:opacity-90 transition-opacity"
           >
-            打开创作向导 →
+            {t("chat.openFilmWizard")}
           </button>
         )}
       </div>
@@ -267,10 +269,10 @@ function ScriptStoryboardResultPreview({ exec, onOpenFilmStudio }: { exec: ToolE
               className="group flex w-full items-start justify-between gap-3 rounded-lg border border-transparent px-2 py-1.5 text-left transition hover:border-primary/25 hover:bg-background/65"
             >
               <span className="min-w-0 text-[13px] leading-5 text-muted-foreground break-all">
-                <span className="font-medium text-foreground">{label}：</span>{path}
+                <span className="font-medium text-foreground">{label}{isZh ? "：" : ": "}</span>{path}
               </span>
               <span className="mt-0.5 shrink-0 rounded-md border border-primary/25 bg-primary/10 px-1.5 py-0.5 text-[11px] font-semibold text-primary opacity-80 transition group-hover:opacity-100">
-                查看
+                {t("chat.view")}
               </span>
             </button>
           ))}
@@ -280,7 +282,8 @@ function ScriptStoryboardResultPreview({ exec, onOpenFilmStudio }: { exec: ToolE
   );
 }
 
-function ShortFictionResultPreview({ exec }: { exec: ToolExecution }) {
+function ShortFictionResultPreview({ exec, t }: { exec: ToolExecution; t: TFunction }) {
+  const isZh = t("nav.connected") === "已连接";
   if (!["short_fiction_run", "generate_cover"].includes(exec.tool) || exec.status !== "completed") return null;
   const details = getGeneratedArtifactDetails(exec);
   const coverPath = details?.coverImagePath ?? extractResultPath(exec.result, "Cover image");
@@ -289,14 +292,14 @@ function ShortFictionResultPreview({ exec }: { exec: ToolExecution }) {
     if (!coverError) return null;
     return (
       <div className="mx-3 mb-3 mt-1 rounded-xl border border-destructive/20 bg-destructive/5 px-3 py-2 text-xs text-destructive">
-        封面未生成：{coverError}
+        {isZh ? "封面未生成：" : "Cover not generated: "}{coverError}
       </div>
     );
   }
 
   const coverUrl = buildApiUrl(`/project/files/${encodeProjectPath(coverPath)}`);
   if (!coverUrl) return null;
-  const title = details?.title ?? details?.storyId ?? "短篇封面";
+  const title = details?.title ?? details?.storyId ?? t("chat.shortCover");
 
   return (
     <div className="mx-3 mb-3 mt-1 overflow-hidden rounded-xl border border-border/40 bg-background/70">
@@ -368,7 +371,8 @@ export function buildPlayRunStatusUrl(details: PlayToolDetails): string | null {
   );
 }
 
-function PlaySceneImagePreview({ details }: { details: PlayToolDetails }) {
+function PlaySceneImagePreview({ details, t }: { details: PlayToolDetails; t: TFunction }) {
+  const isZh = t("nav.connected") === "已连接";
   const runUrl = useMemo(() => buildPlayRunStatusUrl(details), [details]);
   const directUrl = useMemo(() => buildPlaySceneImageUrl(details), [details]);
   const [readyUrl, setReadyUrl] = useState<string | null>(null);
@@ -419,13 +423,13 @@ function PlaySceneImagePreview({ details }: { details: PlayToolDetails }) {
     <div className="mt-3 overflow-hidden rounded-xl border border-border/40 bg-background/80">
       <img
         src={readyUrl}
-        alt="本幕配图"
+        alt={t("chat.sceneImageAlt")}
         className="block max-h-[420px] w-full object-contain bg-muted/20"
         loading="lazy"
       />
       {details.turn != null && (
         <div className="border-t border-border/40 px-3 py-2.5 text-[14px] leading-6 text-muted-foreground">
-          第 {Math.trunc(details.turn)} 幕配图
+          {isZh ? `第 ${Math.trunc(details.turn)} 幕配图` : `Scene image · Turn ${Math.trunc(details.turn)}`}
         </div>
       )}
     </div>
@@ -471,14 +475,14 @@ export function getProposedActionDetails(exec: ToolExecution): ProposedActionDet
   };
 }
 
-export function getProposedActionContractRows(details: ProposedActionDetails): ReadonlyArray<{ label: string; value: string }> {
+export function getProposedActionContractRows(details: ProposedActionDetails, lang: "zh" | "en" = "zh"): ReadonlyArray<{ label: string; value: string }> {
   const playStart = details.actionPayload?.playStart;
   if (details.action !== "play_start" || !playStart) return [];
   const rows: Array<{ label: string; value: string }> = [];
   const worldContract = playStart.worldContract?.trim();
-  if (worldContract) rows.push({ label: "世界契约", value: worldContract });
+  if (worldContract) rows.push({ label: lang === "en" ? "World contract" : "世界契约", value: worldContract });
   const visualContract = playStart.visualContract?.trim();
-  if (visualContract) rows.push({ label: "视觉契约", value: visualContract });
+  if (visualContract) rows.push({ label: lang === "en" ? "Visual contract" : "视觉契约", value: visualContract });
   return rows;
 }
 
@@ -486,11 +490,14 @@ function ProposedActionPreview({
   exec,
   onProposedAction,
   onRejectProposedAction,
+  t,
 }: {
   exec: ToolExecution;
   onProposedAction?: (details: ProposedActionDetails) => void;
   onRejectProposedAction?: (details: ProposedActionDetails) => void;
+  t: TFunction;
 }) {
+  const lang: "zh" | "en" = t("nav.connected") === "已连接" ? "zh" : "en";
   const resolvedProposals = useChatStore((s) => s.resolvedProposals);
   const isActiveSessionStreaming = useChatStore(chatSelectors.isActiveSessionStreaming);
   if (exec.tool !== "propose_action" || exec.status !== "completed") return null;
@@ -502,10 +509,10 @@ function ProposedActionPreview({
   const resolution = resolvedProposals[details.execId];
   const streaming = isActiveSessionStreaming;
   const locked = resolution !== undefined;
-  const contractRows = getProposedActionContractRows(details);
+  const contractRows = getProposedActionContractRows(details, lang);
   return (
     <div className="mx-3 mb-3 mt-1 rounded-xl border border-primary/25 bg-primary/5 px-4 py-3.5">
-      <div className="text-[17px] leading-6 font-semibold text-foreground">{details.title ?? "确认执行"}</div>
+      <div className="text-[17px] leading-6 font-semibold text-foreground">{details.title ?? t("chat.confirmAction")}</div>
       {details.summary && (
         <div className="mt-1.5 whitespace-pre-wrap break-words text-[15px] leading-7 text-muted-foreground">{details.summary}</div>
       )}
@@ -525,10 +532,10 @@ function ProposedActionPreview({
       {resolution === "confirmed" ? (
         <div className="mt-3 flex items-center gap-1.5 text-[15px] leading-6 font-medium text-primary">
           <Check size={15} className="shrink-0" />
-          {details.targetRoute ? "已打开" : "已执行"}
+          {details.targetRoute ? t("chat.opened") : t("chat.executed")}
         </div>
       ) : resolution === "rejected" ? (
-        <div className="mt-3 text-[15px] leading-6 font-medium text-muted-foreground">已取消</div>
+        <div className="mt-3 text-[15px] leading-6 font-medium text-muted-foreground">{t("chat.cancelled")}</div>
       ) : (
         <div className="mt-3 flex flex-wrap gap-2">
           <button
@@ -538,7 +545,7 @@ function ProposedActionPreview({
             disabled={!onProposedAction || streaming || locked}
             className="rounded-lg bg-primary px-3.5 py-2 text-[15px] leading-6 font-medium text-primary-foreground disabled:opacity-50"
           >
-            {streaming ? "执行中…" : details.targetRoute ? "打开入口" : "继续执行"}
+            {streaming ? t("chat.executing") : details.targetRoute ? t("chat.openEntry") : t("chat.continueRun")}
           </button>
           <button
             type="button"
@@ -546,7 +553,7 @@ function ProposedActionPreview({
             disabled={!onRejectProposedAction || streaming || locked}
             className="rounded-lg border border-border/60 bg-background/80 px-3.5 py-2 text-[15px] leading-6 font-medium text-muted-foreground disabled:opacity-50"
           >
-            取消
+            {t("common.cancel")}
           </button>
         </div>
       )}
@@ -554,43 +561,44 @@ function ProposedActionPreview({
   );
 }
 
-function PlayResultPreview({ exec }: { exec: ToolExecution }) {
+function PlayResultPreview({ exec, t }: { exec: ToolExecution; t: TFunction }) {
   if (!["play_start", "play_step", "play_revise"].includes(exec.tool) || exec.status !== "completed") return null;
   const details = getPlayToolDetails(exec);
   if (!details?.sceneText) return null;
   const label = details.kind === "play_world_started"
-    ? "互动世界已启动"
+    ? t("chat.playStarted")
     : details.kind === "play_turn_revised"
-      ? "互动回合已重做"
+      ? t("chat.playRevised")
       : details.kind === "play_variant_restored"
-        ? "已切换互动回合版本"
-        : "互动世界已推进";
+        ? t("chat.playVariantRestored")
+        : t("chat.playAdvanced");
   return (
     <div className="mx-3 mb-3 mt-1 rounded-xl border border-primary/20 bg-primary/5 px-3 py-3">
       <div className="mb-2 text-[16px] leading-6 font-semibold text-primary">
         {label}
       </div>
       <div className="whitespace-pre-wrap text-base leading-7 text-foreground">{details.sceneText}</div>
-      <PlaySceneImagePreview details={details} />
+      <PlaySceneImagePreview details={details} t={t} />
     </div>
   );
 }
 
-function PlayEditPreview({ exec }: { exec: ToolExecution }) {
+function PlayEditPreview({ exec, t }: { exec: ToolExecution; t: TFunction }) {
+  const isZh = t("nav.connected") === "已连接";
   if (exec.tool !== "play_edit" || exec.status !== "completed") return null;
   const details = getPlayEditDetails(exec);
   if (!details) return null;
   const changes = [
-    details.updatedWorldContract ? "世界契约" : "",
-    details.updatedVisualContract ? "视觉契约" : "",
-    details.updatedPremise ? "世界前提" : "",
-    details.updatedEntities && details.updatedEntities > 0 ? `${details.updatedEntities} 张卡片` : "",
+    details.updatedWorldContract ? t("chat.worldContract") : "",
+    details.updatedVisualContract ? t("chat.visualContract") : "",
+    details.updatedPremise ? t("chat.worldPremise") : "",
+    details.updatedEntities && details.updatedEntities > 0 ? (isZh ? `${details.updatedEntities} 张卡片` : `${details.updatedEntities} card(s)`) : "",
   ].filter(Boolean);
   return (
     <div className="mx-3 mb-3 mt-1 rounded-xl border border-primary/20 bg-primary/5 px-3 py-2.5">
-      <div className="text-[16px] leading-6 font-semibold text-primary">互动世界设定已更新</div>
+      <div className="text-[16px] leading-6 font-semibold text-primary">{t("chat.playUpdated")}</div>
       <div className="mt-1 text-xs leading-5 text-muted-foreground">
-        {changes.length > 0 ? changes.join(" · ") : "已写入当前世界。"}
+        {changes.length > 0 ? changes.join(" · ") : t("chat.playWritten")}
       </div>
     </div>
   );
@@ -631,11 +639,15 @@ function PipelineExecution({
   onProposedAction,
   onRejectProposedAction,
   onOpenFilmStudio,
+  t,
+  isZh,
 }: {
   exec: ToolExecution;
   onProposedAction?: (details: ProposedActionDetails) => void;
   onRejectProposedAction?: (details: ProposedActionDetails) => void;
   onOpenFilmStudio?: (projectId: string) => void;
+  t: TFunction;
+  isZh: boolean;
 }) {
   const isActive = exec.status === "running" || exec.status === "processing";
   const [open, setOpen] = useState(isActive);
@@ -666,7 +678,7 @@ function PipelineExecution({
               ? formatDuration(exec.startedAt, exec.startedAt + elapsedMs)
               : exec.completedAt ? formatDuration(exec.startedAt, exec.completedAt) : ""}
           </span>
-          <ExecStatusBadge status={exec.status} />
+          <ExecStatusBadge status={exec.status} t={t} />
           <ChevronDown size={16} className={`text-muted-foreground transition-transform ${open ? "rotate-180" : ""}`} />
         </div>
       </CollapsibleTrigger>
@@ -674,15 +686,16 @@ function PipelineExecution({
         exec={exec}
         onProposedAction={onProposedAction}
         onRejectProposedAction={onRejectProposedAction}
+        t={t}
       />
-      <ShortFictionResultPreview exec={exec} />
-      <ScriptStoryboardResultPreview exec={exec} onOpenFilmStudio={onOpenFilmStudio} />
-      <PlayResultPreview exec={exec} />
-      <PlayEditPreview exec={exec} />
+      <ShortFictionResultPreview exec={exec} t={t} />
+      <ScriptStoryboardResultPreview exec={exec} onOpenFilmStudio={onOpenFilmStudio} t={t} />
+      <PlayResultPreview exec={exec} t={t} />
+      <PlayEditPreview exec={exec} t={t} />
       {typeof exec.result === "string" && exec.result.trim() && (
         <details open className="mx-3 mb-3 mt-1 rounded-lg border border-border/40 bg-background/60 px-2.5 py-2 text-xs">
           <summary className="cursor-pointer select-none font-medium text-muted-foreground hover:text-foreground">
-            查看操作结果
+            {t("chat.viewResult")}
           </summary>
           <div className="mt-2 max-h-80 overflow-auto whitespace-pre-wrap break-words leading-5 text-foreground">
             {exec.result}
@@ -706,7 +719,7 @@ function PipelineExecution({
                     <div className="truncate">{stage.label}</div>
                     {stage.progress && (
                       <div className="mt-0.5 text-[10px] text-muted-foreground/70">
-                        {formatProgress(stage.progress)}
+                        {formatProgress(stage.progress, isZh)}
                       </div>
                     )}
                   </div>
@@ -741,7 +754,7 @@ function PipelineExecution({
 
 // -- Utility tools (read/edit/grep/ls) grouped --
 
-function UtilityToolsGroup({ execs }: { execs: ToolExecution[] }) {
+function UtilityToolsGroup({ execs, isZh }: { execs: ToolExecution[]; isZh: boolean }) {
   const [open, setOpen] = useState(false);
   const allDone = execs.every(e => e.status === "completed" || e.status === "error");
   const hasError = execs.some(e => e.status === "error");
@@ -750,7 +763,7 @@ function UtilityToolsGroup({ execs }: { execs: ToolExecution[] }) {
     <Collapsible open={open} onOpenChange={setOpen}>
       <CollapsibleTrigger className="flex items-center gap-2 px-2 py-1 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer text-xs text-muted-foreground">
         <Wrench size={12} />
-        <span>{execs.length} 个文件操作</span>
+        <span>{isZh ? `${execs.length} 个文件操作` : `${execs.length} file operation(s)`}</span>
         {allDone && !hasError && <CheckCircle2 size={10} className="text-green-600 dark:text-green-400" />}
         {hasError && <XCircle size={10} className="text-destructive" />}
         {!allDone && <Loader2 size={10} className="animate-spin text-primary" />}
@@ -813,6 +826,8 @@ export function groupToolExecutionsChronologically(executions: ToolExecution[]):
 }
 
 export const ToolExecutionSteps = memo(function ToolExecutionSteps({ executions, onProposedAction, onRejectProposedAction, onOpenFilmStudio }: ToolExecutionStepsProps) {
+  const { t, lang } = useI18n();
+  const isZh = lang === "zh";
   const groups = useMemo(() => groupToolExecutionsChronologically(executions), [executions]);
 
   return (
@@ -826,9 +841,11 @@ export const ToolExecutionSteps = memo(function ToolExecutionSteps({ executions,
                 onProposedAction={onProposedAction}
                 onRejectProposedAction={onRejectProposedAction}
                 onOpenFilmStudio={onOpenFilmStudio}
+                t={t}
+                isZh={isZh}
               />
             )
-          : <UtilityToolsGroup key={`utils-${i}`} execs={g.execs} />
+          : <UtilityToolsGroup key={`utils-${i}`} execs={g.execs} isZh={isZh} />
       )}
     </div>
   );

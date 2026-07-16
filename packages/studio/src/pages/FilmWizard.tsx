@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, useCallback } from "react";
 import type { Theme } from "../hooks/use-theme";
-import type { TFunction } from "../hooks/use-i18n";
+import type { StringKey, TFunction } from "../hooks/use-i18n";
 import type { SSEMessage } from "../hooks/use-sse";
 import { useNewSSEMessages } from "../hooks/use-sse";
 import { useColors } from "../hooks/use-colors";
@@ -51,12 +51,12 @@ type Colors = ReturnType<typeof useColors>;
 // Constants
 // ---------------------------------------------------------------------------
 
-const PHASE_LABELS: Record<Phase, string> = {
-  world: "世界",
-  scale: "规模",
-  structure: "结构",
-  workshop: "逐节点",
-  validate: "校验",
+const PHASE_LABEL_KEYS: Record<Phase, StringKey> = {
+  world: "film.phaseWorld",
+  scale: "film.phaseScale",
+  structure: "film.phaseStructure",
+  workshop: "film.phaseWorkshop",
+  validate: "film.phaseValidate",
 };
 
 
@@ -68,19 +68,19 @@ const DEFAULT_SUBVIEW: Record<Phase, string> = {
   validate: "validate",
 };
 
-const PHASE_SUBVIEWS: Record<Phase, ReadonlyArray<{ key: string; label: string }>> = {
+const PHASE_SUBVIEWS: Record<Phase, ReadonlyArray<{ key: string; label: StringKey }>> = {
   world: [
-    { key: "chat", label: "对话" },
-    { key: "anchor", label: "世界锚点" },
+    { key: "chat", label: "film.subChat" },
+    { key: "anchor", label: "film.subAnchor" },
   ],
   scale: [],
   structure: [
-    { key: "flow", label: "流程图" },
-    { key: "tree", label: "树" },
+    { key: "flow", label: "film.subFlow" },
+    { key: "tree", label: "film.subTree" },
   ],
   workshop: [
-    { key: "tree", label: "树" },
-    { key: "chat", label: "对话" },
+    { key: "tree", label: "film.subTree" },
+    { key: "chat", label: "film.subChat" },
   ],
   validate: [],
 };
@@ -108,14 +108,16 @@ const EMPTY_STALE: Record<Phase, boolean> = {
 function WorldAnchorView({
   graph,
   c,
+  t,
 }: {
   graph: StoryGraph | null;
   c: Colors;
+  t: TFunction;
 }) {
   if (!graph?.worldAnchor) {
     return (
       <div className={`p-6 text-sm ${c.muted}`}>
-        暂无世界锚点。请先切换到「对话」，请 AI 帮您设定世界观和角色。
+        {t("film.noAnchor")}
       </div>
     );
   }
@@ -124,34 +126,34 @@ function WorldAnchorView({
   return (
     <div className="p-4 space-y-3 text-sm" data-testid="film-world">
       <div>
-        <div className={`text-xs font-medium mb-1 ${c.muted}`}>故事核心</div>
+        <div className={`text-xs font-medium mb-1 ${c.muted}`}>{t("film.storyCore")}</div>
         <div className="text-foreground">{worldAnchor.storyCore || "—"}</div>
       </div>
       <div className="flex gap-6">
         <div>
-          <div className={`text-xs font-medium mb-1 ${c.muted}`}>主题</div>
+          <div className={`text-xs font-medium mb-1 ${c.muted}`}>{t("film.theme")}</div>
           <div>{worldAnchor.theme || "—"}</div>
         </div>
         <div>
-          <div className={`text-xs font-medium mb-1 ${c.muted}`}>题材</div>
+          <div className={`text-xs font-medium mb-1 ${c.muted}`}>{t("film.genre")}</div>
           <div>{worldAnchor.genre || "—"}</div>
         </div>
         {worldAnchor.durationMinutes > 0 && (
           <div>
-            <div className={`text-xs font-medium mb-1 ${c.muted}`}>时长</div>
-            <div>{worldAnchor.durationMinutes} 分钟</div>
+            <div className={`text-xs font-medium mb-1 ${c.muted}`}>{t("film.duration")}</div>
+            <div>{worldAnchor.durationMinutes} {t("film.minutes")}</div>
           </div>
         )}
       </div>
       {worldAnchor.worldRules && (
         <div>
-          <div className={`text-xs font-medium mb-1 ${c.muted}`}>世界规则</div>
+          <div className={`text-xs font-medium mb-1 ${c.muted}`}>{t("film.worldRules")}</div>
           <div className="whitespace-pre-wrap">{worldAnchor.worldRules}</div>
         </div>
       )}
       {graph.characters.length > 0 && (
         <div>
-          <div className={`text-xs font-medium mb-2 ${c.muted}`}>主要角色</div>
+          <div className={`text-xs font-medium mb-2 ${c.muted}`}>{t("film.mainCharacters")}</div>
           <ul className="space-y-2">
             {graph.characters.map((ch) => (
               <li key={ch.id} className="flex items-start gap-2">
@@ -173,10 +175,10 @@ function WorldAnchorView({
   );
 }
 
-function ScalePlaceholderView({ c }: { c: Colors }) {
+function ScalePlaceholderView({ c, t }: { c: Colors; t: TFunction }) {
   return (
     <div className={`p-6 text-sm ${c.muted}`} data-testid="film-scale-placeholder">
-      规模配置（P2 功能）— 在此设定节点数量目标、分支深度、多结局数量等参数。
+      {t("film.scalePlaceholder")}
     </div>
   );
 }
@@ -250,7 +252,7 @@ export default function FilmWizard({
             onClick={nav.toDashboard}
             className={c.link}
           >
-            ← 互动影游
+            ← {t("film.backToFilms")}
           </button>
           <div className="flex items-center gap-1 flex-wrap">
           {WIZARD_PHASES.map((p, i) => {
@@ -282,7 +284,7 @@ export default function FilmWizard({
                 >
                   {i + 1}
                 </span>
-                <span>{PHASE_LABELS[p]}</span>
+                <span>{t(PHASE_LABEL_KEYS[p])}</span>
               </button>
             );
           })}
@@ -298,7 +300,7 @@ export default function FilmWizard({
             showPreview ? c.btnPrimary : c.btnSecondary,
           ].join(" ")}
         >
-          试玩
+          {t("film.tryPlay")}
         </button>
       </div>
 
@@ -316,7 +318,7 @@ export default function FilmWizard({
                 currentSubView === sv.key ? c.btnPrimary : c.btnSecondary,
               ].join(" ")}
             >
-              {sv.label}
+              {t(sv.label)}
             </button>
           ))}
         </div>
@@ -399,11 +401,11 @@ function MainArea({
   }
 
   if (phase === "world" && subView === "anchor") {
-    return <WorldAnchorView graph={graph} c={c} />;
+    return <WorldAnchorView graph={graph} c={c} t={t} />;
   }
 
   if (phase === "scale") {
-    return <ScalePlaceholderView c={c} />;
+    return <ScalePlaceholderView c={c} t={t} />;
   }
 
   if (phase === "structure" && subView === "flow") {

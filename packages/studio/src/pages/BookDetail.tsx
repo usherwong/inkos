@@ -498,13 +498,11 @@ export function BookDetail({
           </button>
           <button
             onClick={handleToggleReviewMode}
-            title={reviewMode === "manual"
-              ? "手动审查：写完即停，由你点 审稿/修订/通过（更快、更可控）。点此切回自动。"
-              : "自动审查：写完自动审校并按需重写（更省心，但更慢）。点此切到手动·写完即停。"}
+            title={reviewMode === "manual" ? t("book.reviewManualHint") : t("book.reviewAutoHint")}
             className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium bg-secondary/60 text-foreground rounded-xl border border-border/50 hover:bg-secondary transition-all"
           >
             {reviewMode === "manual" ? <Hand size={16} /> : <Settings2 size={16} />}
-            {reviewMode === "manual" ? "审查：手动·写完即停" : "审查：自动"}
+            {reviewMode === "manual" ? t("book.reviewManualLabel") : t("book.reviewAutoLabel")}
           </button>
           <button
             onClick={() => setConfirmDeleteOpen(true)}

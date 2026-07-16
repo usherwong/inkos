@@ -215,7 +215,7 @@ export default function FlowView({
     if (conn.source === conn.target) return;
     const src = graph.nodes.find((g) => g.id === conn.source);
     if (!src) return;
-    await post(addChoiceDelta(src, { id: genChoiceId(), text: "新选项", targetNodeId: conn.target }));
+    await post(addChoiceDelta(src, { id: genChoiceId(), text: t("film.newChoice"), targetNodeId: conn.target }));
   };
 
   const onNodesDelete = async (deleted: Array<{ id: string }>) => {
@@ -245,7 +245,7 @@ export default function FlowView({
       addNodeDelta({
         id: genNodeId(),
         type: "normal",
-        title: "新节点",
+        title: t("film.newNode"),
         choices: [],
         position: { x: 80, y: 80 },
       } as never),
@@ -279,7 +279,7 @@ export default function FlowView({
           onClick={() => setEditing((v) => !v)}
           className={`ml-auto px-3 py-1 rounded text-xs ${c.btnSecondary}`}
         >
-          {editing ? "完成编辑" : "编辑"}
+          {editing ? t("film.doneEditing") : t("common.edit")}
         </button>
         {editing && (
           <button
@@ -287,7 +287,7 @@ export default function FlowView({
             onClick={onAddNode}
             className={`px-3 py-1 rounded text-xs ${c.btnSecondary}`}
           >
-            加节点
+            {t("film.addNode")}
           </button>
         )}
       </div>
@@ -301,22 +301,22 @@ export default function FlowView({
           data-testid="flow-stats"
           className="flex items-center gap-4 text-xs text-muted-foreground border border-border rounded px-3 py-1.5 bg-card shrink-0"
         >
-          <span>总节点 {stats.total}</span>
-          <span>分支 {stats.branch}</span>
-          <span>结局 {stats.ending}</span>
-          <span>死路 {stats.deadEnd}</span>
+          <span>{t("film.totalNodes")} {stats.total}</span>
+          <span>{t("film.branches")} {stats.branch}</span>
+          <span>{t("film.endings")} {stats.ending}</span>
+          <span>{t("film.deadEnds")} {stats.deadEnd}</span>
           <span className="ml-auto flex items-center gap-3">
             <span className="flex items-center gap-1">
               <span style={{ display: "inline-block", width: 20, height: 2, background: "#9ca3af", borderRadius: 1 }} />
-              默认
+              {t("film.edgeDefault")}
             </span>
             <span className="flex items-center gap-1">
               <span style={{ display: "inline-block", width: 20, height: 2, background: "#f59e0b", borderRadius: 1 }} />
-              结局边
+              {t("film.edgeEnding")}
             </span>
             <span className="flex items-center gap-1">
               <span style={{ display: "inline-block", width: 20, height: 2, background: "#8b5cf6", borderRadius: 1 }} />
-              悬停路径
+              {t("film.edgeHover")}
             </span>
           </span>
         </div>

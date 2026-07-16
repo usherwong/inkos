@@ -31,6 +31,7 @@ export function StoryGraphTree({
   embedded?: boolean;
 }) {
   const c = useColors(theme);
+  const isZh = t("nav.connected") === "已连接";
   const { data: graph, loading, error, refetch } = useApi<StoryGraph>(`/projects/${projectId}/story-graph`);
   const [savingId, setSavingId] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -85,21 +86,21 @@ export function StoryGraphTree({
             className={`ml-auto px-3 py-1 rounded ${c.btnPrimary}`}
             data-testid="film-play"
           >
-            试玩 →
+            {t("film.tryPlayArrow")}
           </button>
           <button
             onClick={() => nav.toFlow(projectId)}
             className={`px-3 py-1 rounded ${c.btnSecondary}`}
             data-testid="open-flow"
           >
-            流程图 →
+            {t("film.openFlow")}
           </button>
           <button
             onClick={() => nav.toFilmAuthor(projectId)}
             className={`px-3 py-1 rounded ${c.btnSecondary}`}
             data-testid="open-authoring"
           >
-            AI 对话创作 →
+            {t("film.aiAuthoring")}
           </button>
           {exportUrl && (
             <a
@@ -108,7 +109,7 @@ export function StoryGraphTree({
               className={`px-3 py-1 rounded ${c.btnSecondary}`}
               data-testid="film-export-package"
             >
-              导出整包
+              {t("film.exportPackage")}
             </a>
           )}
         </div>
@@ -118,15 +119,15 @@ export function StoryGraphTree({
 
       {saveError && (
         <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive" data-testid="film-save-error">
-          保存失败：{saveError}
+          {isZh ? "保存失败：" : "Save failed: "}{saveError}
         </div>
       )}
 
       {graph.worldAnchor && (
         <div className="border rounded p-3 text-sm" data-testid="film-world">
-          <div className={c.muted}>世界锚点</div>
-          <div>核心：{graph.worldAnchor.storyCore}</div>
-          <div>主题：{graph.worldAnchor.theme} · 题材：{graph.worldAnchor.genre}</div>
+          <div className={c.muted}>{t("film.worldAnchor")}</div>
+          <div>{isZh ? "核心：" : "Core: "}{graph.worldAnchor.storyCore}</div>
+          <div>{isZh ? "主题：" : "Theme: "}{graph.worldAnchor.theme} · {isZh ? "题材：" : "Genre: "}{graph.worldAnchor.genre}</div>
         </div>
       )}
 
@@ -140,6 +141,7 @@ export function StoryGraphTree({
             generating={generatingId === node.id}
             onGenerateImage={genImage}
             colors={c}
+            t={t}
           />
         ))}
       </div>
@@ -154,6 +156,7 @@ function NodeEditor({
   generating,
   onGenerateImage,
   colors,
+  t,
 }: {
   node: StoryNode;
   saving: boolean;
@@ -161,6 +164,7 @@ function NodeEditor({
   generating: boolean;
   onGenerateImage: (nodeId: string) => void;
   colors: ReturnType<typeof useColors>;
+  t: TFunction;
 }) {
   const [scene, setScene] = useState(node.sceneDesc);
   const dirty = scene !== node.sceneDesc;
@@ -203,7 +207,7 @@ function NodeEditor({
           onClick={() => onSave({ ...node, sceneDesc: scene })}
           className={`px-3 py-1 text-xs rounded ${colors.btnPrimary} disabled:opacity-40`}
         >
-          {saving ? "保存中…" : "保存"}
+          {saving ? t("film.saving") : t("common.save")}
         </button>
         <button
           data-testid={`gen-image-${node.id}`}
@@ -211,7 +215,7 @@ function NodeEditor({
           onClick={() => onGenerateImage(node.id)}
           className={`px-3 py-1 text-xs rounded ${colors.btnSecondary} disabled:opacity-40`}
         >
-          {generating ? "生成中…" : "生成配图"}
+          {generating ? t("film.generating") : t("film.genImage")}
         </button>
       </div>
     </div>

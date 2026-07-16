@@ -8,33 +8,34 @@ import type {
   ToolExecution,
 } from "../../types";
 import { localizeKnownRuntimeMessage } from "../../../../lib/error-copy";
+import { getUiLang } from "../../../../lib/ui-lang";
 
 const NULL_BOOK_KEY = "__null__";
 
-const AGENT_LABELS: Record<string, string> = {
-  architect: "建书",
-  writer: "写作",
-  auditor: "审计",
-  reviser: "修订",
-  exporter: "导出",
+const AGENT_LABELS: Record<string, { zh: string; en: string }> = {
+  architect: { zh: "建书", en: "Book setup" },
+  writer: { zh: "写作", en: "Writing" },
+  auditor: { zh: "审计", en: "Audit" },
+  reviser: { zh: "修订", en: "Revision" },
+  exporter: { zh: "导出", en: "Export" },
 };
 
-const TOOL_LABELS: Record<string, string> = {
-  read: "读取文件",
-  edit: "编辑文件",
-  grep: "搜索",
-  ls: "列目录",
-  context_compression: "整理上下文",
-  propose_action: "确认动作",
-  short_fiction_run: "短篇生产",
-  generate_cover: "生成封面",
-  script_create: "剧本创作",
-  storyboard_create: "分镜创作",
-  interactive_film_create: "互动影游",
-  play_edit: "编辑互动世界",
-  play_start: "启动互动世界",
-  play_revise: "重做互动回合",
-  play_step: "推进互动世界",
+const TOOL_LABELS: Record<string, { zh: string; en: string }> = {
+  read: { zh: "读取文件", en: "Read file" },
+  edit: { zh: "编辑文件", en: "Edit file" },
+  grep: { zh: "搜索", en: "Search" },
+  ls: { zh: "列目录", en: "List directory" },
+  context_compression: { zh: "整理上下文", en: "Compact context" },
+  propose_action: { zh: "确认动作", en: "Confirm action" },
+  short_fiction_run: { zh: "短篇生产", en: "Short fiction run" },
+  generate_cover: { zh: "生成封面", en: "Generate cover" },
+  script_create: { zh: "剧本创作", en: "Script writing" },
+  storyboard_create: { zh: "分镜创作", en: "Storyboarding" },
+  interactive_film_create: { zh: "互动影游", en: "Interactive film" },
+  play_edit: { zh: "编辑互动世界", en: "Edit play world" },
+  play_start: { zh: "启动互动世界", en: "Start play world" },
+  play_revise: { zh: "重做互动回合", en: "Redo play turn" },
+  play_step: { zh: "推进互动世界", en: "Advance play world" },
 };
 
 export function bookKey(bookId: string | null | undefined): string {
@@ -47,8 +48,9 @@ export function extractErrorMessage(error: string | { code?: string; message?: s
 }
 
 export function resolveToolLabel(tool: string, agent?: string): string {
-  if (tool === "sub_agent" && agent) return AGENT_LABELS[agent] ?? agent;
-  return TOOL_LABELS[tool] ?? tool;
+  const lang = getUiLang();
+  if (tool === "sub_agent" && agent) return AGENT_LABELS[agent]?.[lang] ?? agent;
+  return TOOL_LABELS[tool]?.[lang] ?? tool;
 }
 
 export function summarizeResult(result: unknown): string {

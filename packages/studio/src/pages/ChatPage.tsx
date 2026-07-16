@@ -1,6 +1,6 @@
 import { memo, useRef, useEffect, useMemo, useState } from "react";
 import type { Theme } from "../hooks/use-theme";
-import type { TFunction } from "../hooks/use-i18n";
+import { useI18n, type TFunction } from "../hooks/use-i18n";
 import type { SSEMessage } from "../hooks/use-sse";
 import { fetchJson, postApi, useApi } from "../hooks/use-api";
 import type { ChatAttachmentPayload, MessagePart } from "../store/chat/types";
@@ -551,12 +551,12 @@ export function ChatPage({ activeBookId, mode = activeBookId ? "book" : "book-cr
   }, [services, modelsByService]);
 
   const selectedModelLabel = useMemo(() => {
-    if (!selectedModel) return "选择模型";
+    if (!selectedModel) return isZh ? "选择模型" : "Select model";
     const group = groupedModels.find((item) => item.service === selectedService);
     const model = group?.models.find((item) => item.id === selectedModel);
     const modelLabel = model?.name ?? selectedModel;
     return group ? `${group.label} · ${modelLabel}` : modelLabel;
-  }, [groupedModels, selectedModel, selectedService]);
+  }, [groupedModels, selectedModel, selectedService, isZh]);
 
   // Auto-select from saved service config first, then fall back to the first available model.
   useEffect(() => {
@@ -804,7 +804,7 @@ export function ChatPage({ activeBookId, mode = activeBookId ? "book" : "book-cr
     markProposalResolved(details.execId, "rejected");
     if (!activeSessionId) return;
     autoScrollPinnedRef.current = true;
-    await sendMessage(activeSessionId, `取消这次操作：${details.title ?? details.instruction}`, {
+    await sendMessage(activeSessionId, isZh ? `取消这次操作：${details.title ?? details.instruction}` : `Cancel this action: ${details.title ?? details.instruction}`, {
       activeBookId,
       sessionKind: currentSessionKind,
       actionSource: "button",
@@ -1181,7 +1181,7 @@ export function ChatPage({ activeBookId, mode = activeBookId ? "book" : "book-cr
               </div>
               <div className="flex items-center gap-2 px-3 pb-2 border-t border-border/20 pt-1.5">
                 {modelPickerStatus === "loading" ? (
-                  <span className="text-[15px] text-muted-foreground/40 animate-pulse">加载模型...</span>
+                  <span className="text-[15px] text-muted-foreground/40 animate-pulse">{t("chat.loadingModels")}</span>
                 ) : modelPickerStatus === "ready" ? (
                   <DropdownMenu>
                     <DropdownMenuTrigger className="flex items-center gap-1.5 px-2 py-1.5 rounded-md hover:bg-muted text-[16px] transition-colors cursor-pointer">
@@ -1203,7 +1203,7 @@ export function ChatPage({ activeBookId, mode = activeBookId ? "book" : "book-cr
                     onClick={() => nav.toServices()}
                     className="text-[15px] font-medium text-primary border border-primary/40 rounded-lg px-3 py-1 hover:bg-primary/10 transition-colors animate-pulse"
                   >
-                    配置模型 →
+                    {t("chat.configureModel")}
                   </button>
                 )}
                 {currentSessionKind === "play" && (
@@ -1304,6 +1304,7 @@ function ModelPickerContent({
   onSelect: (model: string, service: string) => void;
   onManage: () => void;
 }) {
+  const { t } = useI18n();
   const [search, setSearch] = useState("");
   const filtered = useMemo(() => filterModelGroups(groupedModels, search), [groupedModels, search]);
 
@@ -1314,7 +1315,7 @@ function ModelPickerContent({
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="搜索模型..."
+          placeholder={t("chat.searchModels")}
           className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground/40"
           onClick={(e) => e.stopPropagation()}
           onKeyDown={(e) => e.stopPropagation()}
@@ -1345,13 +1346,13 @@ function ModelPickerContent({
         ))}
         {filtered.length === 0 && (
           <div className="px-3 py-4 text-xs text-muted-foreground/50 text-center italic">
-            无匹配模型
+            {t("chat.noModelMatch")}
           </div>
         )}
       </div>
       <div className="border-t border-border/30">
         <DropdownMenuItem onClick={onManage} className="text-primary">
-          管理服务商
+          {t("chat.manageProviders")}
         </DropdownMenuItem>
       </div>
     </DropdownMenuContent>

@@ -4,6 +4,7 @@ import { useChatStore } from "../../store/chat";
 import { fetchJson } from "../../hooks/use-api";
 import { SidebarCard } from "./SidebarCard";
 import { cn } from "../../lib/utils";
+import type { TFunction } from "../../hooks/use-i18n";
 import { roleFromPath, type RoleRef } from "../../lib/truth-display";
 
 interface CharacterInfo {
@@ -52,14 +53,14 @@ function getRoleColor(role: string): string {
   return "bg-zinc-500/15 text-zinc-600 dark:text-zinc-400";
 }
 
-const TIER_BADGE: Record<RoleRef["tier"], { label: string; color: string }> = {
-  major: { label: "主要", color: "bg-amber-500/15 text-amber-600 dark:text-amber-400" },
-  minor: { label: "次要", color: "bg-blue-500/15 text-blue-600 dark:text-blue-400" },
+const TIER_BADGE: Record<RoleRef["tier"], { label: { zh: string; en: string }; color: string }> = {
+  major: { label: { zh: "主要", en: "Major" }, color: "bg-amber-500/15 text-amber-600 dark:text-amber-400" },
+  minor: { label: { zh: "次要", en: "Minor" }, color: "bg-blue-500/15 text-blue-600 dark:text-blue-400" },
 };
 
 // Phase 5 layout: one file per character under roles/. Each entry opens the
 // full (humanized) character sheet — no raw matrix parsing needed.
-function RoleEntry({ role }: { readonly role: RoleRef }) {
+function RoleEntry({ role, isZh }: { readonly role: RoleRef; readonly isZh: boolean }) {
   const openArtifact = useChatStore((s) => s.openArtifact);
   const badge = TIER_BADGE[role.tier];
   return (
@@ -72,13 +73,13 @@ function RoleEntry({ role }: { readonly role: RoleRef }) {
         {role.name}
       </span>
       <span className={cn("text-[12px] px-1.5 py-0.5 rounded-full shrink-0", badge.color)}>
-        {badge.label}
+        {isZh ? badge.label.zh : badge.label.en}
       </span>
     </button>
   );
 }
 
-function CharacterCard({ char }: { readonly char: CharacterInfo }) {
+function CharacterCard({ char, isZh }: { readonly char: CharacterInfo; readonly isZh: boolean }) {
   const [expanded, setExpanded] = useState(false);
   const role = char.fields["定位"] ?? char.fields["Role"] ?? "";
   const tags = char.fields["标签"] ?? char.fields["Tags"] ?? "";
@@ -104,10 +105,10 @@ function CharacterCard({ char }: { readonly char: CharacterInfo }) {
       {expanded && (
         <div className="px-2.5 pb-2.5 space-y-1">
           {tags && (
-            <p className="text-[14px] leading-6 text-muted-foreground"><span className="text-muted-foreground/60">标签</span> {tags}</p>
+            <p className="text-[14px] leading-6 text-muted-foreground"><span className="text-muted-foreground/60">{isZh ? "标签" : "Tags"}</span> {tags}</p>
           )}
           {current && (
-            <p className="text-[14px] leading-6 text-muted-foreground"><span className="text-muted-foreground/60">当前</span> {current}</p>
+            <p className="text-[14px] leading-6 text-muted-foreground"><span className="text-muted-foreground/60">{isZh ? "当前" : "Now"}</span> {current}</p>
           )}
           {Object.entries(char.fields)
             .filter(([k]) => !["定位", "Role", "标签", "Tags", "当前", "Current"].includes(k))
@@ -124,9 +125,11 @@ function CharacterCard({ char }: { readonly char: CharacterInfo }) {
 
 interface CharacterSectionProps {
   readonly bookId: string;
+  readonly t: TFunction;
 }
 
-export function CharacterSection({ bookId }: CharacterSectionProps) {
+export function CharacterSection({ bookId, t }: CharacterSectionProps) {
+  const isZh = t("nav.connected") === "已连接";
   const [roles, setRoles] = useState<ReadonlyArray<RoleRef>>([]);
   const [legacyChars, setLegacyChars] = useState<CharacterInfo[]>([]);
   const bookDataVersion = useChatStore((s) => s.bookDataVersion);
@@ -175,11 +178,11 @@ export function CharacterSection({ bookId }: CharacterSectionProps) {
   if (roles.length === 0 && legacyChars.length === 0) return null;
 
   return (
-    <SidebarCard title="角色">
+    <SidebarCard title={t("book.characters")}>
       <div className="space-y-1.5">
         {roles.length > 0
-          ? roles.map((role) => <RoleEntry key={role.path} role={role} />)
-          : legacyChars.map((char) => <CharacterCard key={char.name} char={char} />)}
+          ? roles.map((role) => <RoleEntry key={role.path} role={role} isZh={isZh} />)
+          : legacyChars.map((char) => <CharacterCard key={char.name} char={char} isZh={isZh} />)}
       </div>
     </SidebarCard>
   );

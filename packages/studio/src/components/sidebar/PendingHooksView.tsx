@@ -1,8 +1,10 @@
 import { cn } from "../../lib/utils";
+import type { TFunction } from "../../hooks/use-i18n";
 import { parsePendingHooks } from "../../lib/truth-display";
 
 interface PendingHooksViewProps {
   readonly content: string;
+  readonly t: TFunction;
 }
 
 const HOOK_TYPE_COLOR: Record<string, string> = {
@@ -19,10 +21,10 @@ function hookTypeColor(type: string): string {
 // Renders pending_hooks.md (a 13-column tracking table) as browsable cards: the
 // actual foreshadow text up front, with type / core / payoff as small tags.
 // Bookkeeping columns (half-life, dependencies, …) are intentionally dropped.
-export function PendingHooksView({ content }: PendingHooksViewProps) {
+export function PendingHooksView({ content, t }: PendingHooksViewProps) {
   const hooks = parsePendingHooks(content);
   if (hooks.length === 0) {
-    return <p className="text-[14px] leading-6 text-muted-foreground/60 italic">还没有埋下伏笔。</p>;
+    return <p className="text-[14px] leading-6 text-muted-foreground/60 italic">{t("book.noHooks")}</p>;
   }
   return (
     <div className="flex flex-col gap-2">
@@ -31,12 +33,12 @@ export function PendingHooksView({ content }: PendingHooksViewProps) {
           <div className="flex items-center gap-1.5 mb-1.5 flex-wrap">
             {hook.promoted === false && (
               <span className="text-[12px] px-1.5 py-0.5 rounded-full bg-zinc-500/10 text-muted-foreground">
-                种子
+                {t("book.hookSeed")}
               </span>
             )}
             {hook.promoted === true && (
               <span className="text-[12px] px-1.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
-                活跃
+                {t("book.hookActive")}
               </span>
             )}
             {hook.type && (
@@ -46,11 +48,11 @@ export function PendingHooksView({ content }: PendingHooksViewProps) {
             )}
             {hook.core && (
               <span className="text-[12px] px-1.5 py-0.5 rounded-full bg-amber-500/15 text-amber-600 dark:text-amber-400">
-                核心
+                {t("book.hookCore")}
               </span>
             )}
             {hook.payoff && (
-              <span className="text-[12px] text-muted-foreground/50 ml-auto">回收 · {hook.payoff}</span>
+              <span className="text-[12px] text-muted-foreground/50 ml-auto">{t("book.hookPayoff")} · {hook.payoff}</span>
             )}
           </div>
           <p className="text-[15px] text-foreground leading-7 font-['SimSun','Songti_SC','STSong',serif]">

@@ -20,6 +20,7 @@ import type { ComponentProps, ReactNode } from "react";
 import { isValidElement } from "react";
 
 import { CodeBlock } from "./code-block";
+import { useI18n } from "../../hooks/use-i18n";
 
 export type ToolProps = ComponentProps<typeof Collapsible>;
 
@@ -44,14 +45,14 @@ export type ToolHeaderProps = {
     }
 );
 
-const statusLabels: Record<ToolPart["state"], string> = {
-  "approval-requested": "等待确认",
-  "approval-responded": "已响应",
-  "input-available": "执行中",
-  "input-streaming": "处理中",
-  "output-available": "已完成",
-  "output-denied": "已拒绝",
-  "output-error": "出错",
+const statusLabels: Record<ToolPart["state"], { zh: string; en: string }> = {
+  "approval-requested": { zh: "等待确认", en: "Awaiting approval" },
+  "approval-responded": { zh: "已响应", en: "Responded" },
+  "input-available": { zh: "执行中", en: "Running" },
+  "input-streaming": { zh: "处理中", en: "Processing" },
+  "output-available": { zh: "已完成", en: "Done" },
+  "output-denied": { zh: "已拒绝", en: "Denied" },
+  "output-error": { zh: "出错", en: "Error" },
 };
 
 const statusIcons: Record<ToolPart["state"], ReactNode> = {
@@ -64,10 +65,10 @@ const statusIcons: Record<ToolPart["state"], ReactNode> = {
   "output-error": <XCircleIcon className="size-4 text-red-600" />,
 };
 
-export const getStatusBadge = (status: ToolPart["state"]) => (
+export const getStatusBadge = (status: ToolPart["state"], lang: "zh" | "en" = "zh") => (
   <Badge className="gap-1.5 rounded-full text-xs" variant="secondary">
     {statusIcons[status]}
-    {statusLabels[status]}
+    {statusLabels[status][lang]}
   </Badge>
 );
 
@@ -79,6 +80,7 @@ export const ToolHeader = ({
   toolName,
   ...props
 }: ToolHeaderProps) => {
+  const { lang } = useI18n();
   const derivedName =
     type === "dynamic-tool" ? toolName : type.split("-").slice(1).join("-");
 
@@ -93,7 +95,7 @@ export const ToolHeader = ({
       <div className="flex items-center gap-2">
         <WrenchIcon className="size-4 text-muted-foreground" />
         <span className="font-medium text-sm">{title ?? derivedName}</span>
-        {getStatusBadge(state)}
+        {getStatusBadge(state, lang)}
       </div>
       <ChevronDownIcon className="size-4 text-muted-foreground transition-transform group-data-[state=open]:rotate-180" />
     </CollapsibleTrigger>

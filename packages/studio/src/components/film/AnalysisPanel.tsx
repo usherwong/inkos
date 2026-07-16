@@ -1,4 +1,5 @@
 import { useApi } from "../../hooks/use-api";
+import { useI18n, type TFunction } from "../../hooks/use-i18n";
 import { useColors } from "../../hooks/use-colors";
 import type { Theme } from "../../hooks/use-theme";
 
@@ -102,14 +103,14 @@ function arcToPolylinePoints(arc: Arc): string {
 // Sub-components
 // ---------------------------------------------------------------------------
 
-function IssuesList({ report, c }: { report: AnalysisReport; c: Colors }) {
+function IssuesList({ report, c, t }: { report: AnalysisReport; c: Colors; t: TFunction }) {
   return (
     <div className="border border-border rounded p-3" data-testid="validation-panel">
       <div className={`text-sm font-medium ${c.muted}`}>
-        校验{report.ok ? "" : "（有阻断问题）"}
+        {t("film.validation")}{report.ok ? "" : t("film.validationBlocked")}
       </div>
       {report.issues.length === 0 ? (
-        <div className={`text-sm mt-1 ${c.muted}`}>无问题</div>
+        <div className={`text-sm mt-1 ${c.muted}`}>{t("film.noIssues")}</div>
       ) : (
         <ul className="mt-1 space-y-1">
           {report.issues.map((issue, i) => (
@@ -128,22 +129,23 @@ function IssuesList({ report, c }: { report: AnalysisReport; c: Colors }) {
   );
 }
 
-function EmotionArcChart({ arcs, c }: { arcs: EmotionArcs; c: Colors }) {
+function EmotionArcChart({ arcs, c, t }: { arcs: EmotionArcs; c: Colors; t: TFunction }) {
+  const isZh = t("nav.connected") === "已连接";
   const displayArcs = arcs.arcs.slice(0, MAX_ARC_DISPLAY);
   const overLimit = arcs.arcs.length > MAX_ARC_DISPLAY;
   const baselineY = SVG_PAD_Y + (SVG_H - 2 * SVG_PAD_Y) / 2;
 
   return (
     <div data-testid="emotion-arc" className="border border-border rounded p-3">
-      <div className={`text-sm font-medium mb-2 ${c.muted}`}>情感曲线</div>
+      <div className={`text-sm font-medium mb-2 ${c.muted}`}>{t("film.emotionCurve")}</div>
       {displayArcs.length === 0 ? (
-        <div className={`text-sm ${c.muted}`}>暂无可分析路径</div>
+        <div className={`text-sm ${c.muted}`}>{t("film.noPaths")}</div>
       ) : (
         <>
           <svg
             width="100%"
             viewBox={`0 0 ${SVG_W} ${SVG_H}`}
-            aria-label="情感曲线图"
+            aria-label={t("film.emotionChartAria")}
             className="rounded bg-muted/10"
             style={{ maxHeight: SVG_H }}
           >
@@ -182,14 +184,14 @@ function EmotionArcChart({ arcs, c }: { arcs: EmotionArcs; c: Colors }) {
                   className="inline-block w-4 h-0.5 rounded-full"
                   style={{ background: ARC_STROKE_COLORS[idx % ARC_STROKE_COLORS.length] }}
                 />
-                <span className={c.muted}>{arc.endingId ?? "无结局"}</span>
+                <span className={c.muted}>{arc.endingId ?? t("film.noEnding")}</span>
               </span>
             ))}
           </div>
           {(overLimit || arcs.truncated) && (
             <div className={`text-xs mt-1 ${c.muted}`}>
-              {overLimit && `仅显示前 ${MAX_ARC_DISPLAY} 条路径`}
-              {arcs.truncated && "（路径总数已超过枚举上限）"}
+              {overLimit && (isZh ? `仅显示前 ${MAX_ARC_DISPLAY} 条路径` : `Showing first ${MAX_ARC_DISPLAY} paths`)}
+              {arcs.truncated && t("film.pathsTruncated")}
             </div>
           )}
         </>
@@ -201,10 +203,13 @@ function EmotionArcChart({ arcs, c }: { arcs: EmotionArcs; c: Colors }) {
 function PathDistributionPanel({
   distribution,
   c,
+  t,
 }: {
   distribution: PathDistribution;
   c: Colors;
+  t: TFunction;
 }) {
+  const isZh = t("nav.connected") === "已连接";
   const endingEntries = Object.entries(distribution.byEnding);
   const histEntries = Object.entries(distribution.lengthHistogram)
     .map(([len, count]) => ({ len: Number(len), count }))
@@ -213,16 +218,16 @@ function PathDistributionPanel({
 
   return (
     <div data-testid="path-distribution" className="border border-border rounded p-3">
-      <div className={`text-sm font-medium mb-2 ${c.muted}`}>路径分布</div>
+      <div className={`text-sm font-medium mb-2 ${c.muted}`}>{t("film.pathDistribution")}</div>
 
       {distribution.truncated && (
         <div className={`text-xs mb-2 ${c.muted}`}>
-          路径过多，仅统计前 {distribution.total} 条
+          {isZh ? `路径过多，仅统计前 ${distribution.total} 条` : `Too many paths; only the first ${distribution.total} are counted`}
         </div>
       )}
 
       {endingEntries.length === 0 ? (
-        <div className={`text-sm ${c.muted}`}>暂无路径数据</div>
+        <div className={`text-sm ${c.muted}`}>{t("film.noPathData")}</div>
       ) : (
         <div className="space-y-1.5 mb-4">
           {endingEntries.map(([endingId, count]) => {
@@ -252,7 +257,7 @@ function PathDistributionPanel({
 
       {histEntries.length > 0 && (
         <div>
-          <div className={`text-xs font-medium mb-2 ${c.muted}`}>路径长度分布</div>
+          <div className={`text-xs font-medium mb-2 ${c.muted}`}>{t("film.pathLengthDist")}</div>
           <div className="flex items-end gap-1 h-12">
             {histEntries.map(({ len, count }) => {
               const heightPct = (count / maxHistCount) * 100;
@@ -264,7 +269,7 @@ function PathDistributionPanel({
                   <div
                     className="w-full bg-primary/50 rounded-t"
                     style={{ height: `${heightPct}%` }}
-                    title={`长度 ${len}: ${count} 条`}
+                    title={isZh ? `长度 ${len}: ${count} 条` : `Length ${len}: ${count} path(s)`}
                   />
                   <span className={`text-xs leading-none ${c.muted}`}>{len}</span>
                 </div>
@@ -288,28 +293,29 @@ export function AnalysisPanel({
   projectId: string;
   theme: Theme;
 }) {
+  const { t, lang } = useI18n();
   const c = useColors(theme);
   const { data, loading, error } = useApi<AnalysisData>(
     `/projects/${projectId}/story-graph/analysis`,
   );
 
   if (loading) {
-    return <div className={`p-4 text-sm ${c.muted}`}>正在加载分析结果…</div>;
+    return <div className={`p-4 text-sm ${c.muted}`}>{t("film.loadingAnalysis")}</div>;
   }
 
   if (error) {
-    return <div className="p-4 text-sm text-destructive">加载失败：{error}</div>;
+    return <div className="p-4 text-sm text-destructive">{lang === "en" ? "Failed to load: " : "加载失败："}{error}</div>;
   }
 
   if (!data) {
-    return <div className={`p-4 text-sm ${c.muted}`}>暂无分析数据</div>;
+    return <div className={`p-4 text-sm ${c.muted}`}>{t("film.noAnalysis")}</div>;
   }
 
   return (
     <div className="p-4 max-w-2xl space-y-4">
-      <IssuesList report={data.report} c={c} />
-      <EmotionArcChart arcs={data.arcs} c={c} />
-      <PathDistributionPanel distribution={data.distribution} c={c} />
+      <IssuesList report={data.report} c={c} t={t} />
+      <EmotionArcChart arcs={data.arcs} c={c} t={t} />
+      <PathDistributionPanel distribution={data.distribution} c={c} t={t} />
     </div>
   );
 }

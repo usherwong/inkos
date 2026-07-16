@@ -1,3 +1,5 @@
+import { getUiLang } from "./ui-lang";
+
 const KNOWN_RUNTIME_REPLACEMENTS: ReadonlyArray<{
   readonly pattern: RegExp;
   readonly replacement: string;
@@ -29,6 +31,11 @@ const KNOWN_RUNTIME_REPLACEMENTS: ReadonlyArray<{
 ];
 
 export function localizeKnownRuntimeMessage(message: string): string {
+  // The runtime emits these messages in English already; the replacement table
+  // exists to give zh users friendly copy. In EN mode, pass them through.
+  if (getUiLang() === "en") {
+    return message;
+  }
   let localized = message;
   for (const entry of KNOWN_RUNTIME_REPLACEMENTS) {
     localized = localized.replace(entry.pattern, entry.replacement);

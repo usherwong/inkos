@@ -242,21 +242,21 @@ export function ImportManager({ nav, theme, t, initialTab }: { nav: Nav; theme: 
             <div className="grid grid-cols-3 gap-3">
               <select value={ffMode} onChange={(e) => setFfMode(e.target.value)}
                 className="px-3 py-2 rounded-lg bg-secondary/30 border border-border text-sm">
-                <option value="canon">原著向</option>
-                <option value="au">架空 AU</option>
-                <option value="ooc">性格偏离 OOC</option>
-                <option value="cp">配对 CP</option>
+                <option value="canon">{t("imp.modeCanon")}</option>
+                <option value="au">{t("imp.modeAu")}</option>
+                <option value="ooc">{t("imp.modeOoc")}</option>
+                <option value="cp">{t("imp.modeCp")}</option>
               </select>
               <select value={ffGenre} onChange={(e) => setFfGenre(e.target.value)}
                 className="px-3 py-2 rounded-lg bg-secondary/30 border border-border text-sm">
-                <option value="other">其他</option>
-                <option value="xuanhuan">玄幻</option>
-                <option value="urban">都市</option>
-                <option value="xianxia">仙侠</option>
+                <option value="other">{t("imp.genreOther")}</option>
+                <option value="xuanhuan">{t("imp.genreXuanhuan")}</option>
+                <option value="urban">{t("imp.genreUrban")}</option>
+                <option value="xianxia">{t("imp.genreXianxia")}</option>
               </select>
               <select value={ffLang} onChange={(e) => setFfLang(e.target.value as "zh" | "en")}
                 className="px-3 py-2 rounded-lg bg-secondary/30 border border-border text-sm">
-                <option value="zh">中文</option>
+                <option value="zh">{t("imp.langZh")}</option>
                 <option value="en">English</option>
               </select>
             </div>
@@ -304,14 +304,14 @@ export function ImportManager({ nav, theme, t, initialTab }: { nav: Nav; theme: 
             <div className="grid grid-cols-2 gap-3">
               <select value={imGenre} onChange={(e) => setImGenre(e.target.value)}
                 className="px-3 py-2 rounded-lg bg-secondary/30 border border-border text-sm">
-                <option value="other">其他</option>
-                <option value="xuanhuan">玄幻</option>
-                <option value="urban">都市</option>
-                <option value="xianxia">仙侠</option>
+                <option value="other">{t("imp.genreOther")}</option>
+                <option value="xuanhuan">{t("imp.genreXuanhuan")}</option>
+                <option value="urban">{t("imp.genreUrban")}</option>
+                <option value="xianxia">{t("imp.genreXianxia")}</option>
               </select>
               <select value={imLang} onChange={(e) => setImLang(e.target.value as "zh" | "en")}
                 className="px-3 py-2 rounded-lg bg-secondary/30 border border-border text-sm">
-                <option value="zh">中文</option>
+                <option value="zh">{t("imp.langZh")}</option>
                 <option value="en">English</option>
               </select>
             </div>

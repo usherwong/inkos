@@ -61,6 +61,7 @@ interface Nav {
 
 export function TruthFiles({ bookId, nav, theme, t }: { bookId: string; nav: Nav; theme: Theme; t: TFunction }) {
   const c = useColors(theme);
+  const isZh = t("nav.connected") === "已连接";
   const { data } = useApi<{ files: ReadonlyArray<TruthFile> }>(`/books/${bookId}/truth`);
   const [selected, setSelected] = useState<string | null>(null);
   const [editMode, setEditMode] = useState(false);
@@ -144,9 +145,9 @@ export function TruthFiles({ bookId, nav, theme, t }: { bookId: string; nav: Nav
                   data-testid="legacy-shim-warning"
                   className="mb-3 px-3 py-2 rounded-md border border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-300 text-xs leading-relaxed"
                 >
-                  <div className="font-medium">兼容层只读 / Read-only compat shim</div>
+                  <div className="font-medium">{isZh ? "兼容层只读 / Read-only compat shim" : "Read-only compat shim"}</div>
                   <div className="mt-1">
-                    本文件已废弃，仅供外部读取。权威来源：
+                    {t("truth.legacyBody")}
                     <code className="ml-1 px-1 py-0.5 rounded bg-background/40 font-mono">
                       {SHIM_AUTHORITATIVE_PATH[selected] ?? "outline/"}
                     </code>
@@ -158,9 +159,9 @@ export function TruthFiles({ bookId, nav, theme, t }: { bookId: string; nav: Nav
                   data-testid="runtime-diagnostic-warning"
                   className="mb-3 px-3 py-2 rounded-md border border-blue-500/30 bg-blue-500/10 text-blue-700 dark:text-blue-300 text-xs leading-relaxed"
                 >
-                  <div className="font-medium">运行时诊断文件 / Runtime diagnostic</div>
+                  <div className="font-medium">{isZh ? "运行时诊断文件 / Runtime diagnostic" : "Runtime diagnostic"}</div>
                   <div className="mt-1">
-                    这里展示本章写作时的上下文选择、保护层、可压缩层和预算 trace。它只用于追溯系统看了什么，不作为可编辑设定。
+                    {t("truth.diagBody")}
                   </div>
                 </div>
               )}

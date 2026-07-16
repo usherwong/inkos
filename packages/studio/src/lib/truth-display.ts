@@ -17,35 +17,51 @@ export interface DisplayCard {
   readonly values: ReadonlyArray<string>;
 }
 
-const FANFIC_LABELS: Record<string, string> = {
-  canon: "原著向",
-  au: "架空改编",
-  ooc: "OOC",
-  cp: "CP 向",
+type DisplayLang = "zh" | "en";
+
+const FANFIC_LABELS: Record<DisplayLang, Record<string, string>> = {
+  zh: {
+    canon: "原著向",
+    au: "架空改编",
+    ooc: "OOC",
+    cp: "CP 向",
+  },
+  en: {
+    canon: "Canon",
+    au: "AU",
+    ooc: "OOC",
+    cp: "CP",
+  },
+};
+
+const CARD_LABELS: Record<DisplayLang, { protagonist: string; genre: string; era: string; prohibitions: string; fanficMode: string }> = {
+  zh: { protagonist: "主角", genre: "题材", era: "时代背景", prohibitions: "红线", fanficMode: "同人模式" },
+  en: { protagonist: "Protagonist", genre: "Genre", era: "Era", prohibitions: "Red Lines", fanficMode: "Fanfic Mode" },
 };
 
 // Turn the structured frontmatter of story_frame.md into a few reader-friendly
 // cards. Only story-meaningful fields surface; engineering/tuning fields
 // (audit dimensions, fatigue words, numeric overrides, version) are omitted on
 // purpose so the reader sees story facts, not generator config.
-export function frontmatterToCards(fm: TruthFrontmatter | null | undefined): ReadonlyArray<DisplayCard> {
+export function frontmatterToCards(fm: TruthFrontmatter | null | undefined, lang: DisplayLang = "zh"): ReadonlyArray<DisplayCard> {
   if (!fm) return [];
+  const labels = CARD_LABELS[lang];
   const cards: DisplayCard[] = [];
   const name = fm.protagonist?.name?.trim();
-  if (name) cards.push({ label: "主角", values: [name] });
+  if (name) cards.push({ label: labels.protagonist, values: [name] });
   const genre = fm.genreLock?.primary?.trim();
-  if (genre) cards.push({ label: "题材", values: [genre] });
+  if (genre) cards.push({ label: labels.genre, values: [genre] });
   const era = fm.eraConstraints;
   if (era?.enabled) {
     const eraValues = [era.period, era.region]
       .map((v) => v?.trim())
       .filter((v): v is string => Boolean(v));
-    if (eraValues.length > 0) cards.push({ label: "时代背景", values: eraValues });
+    if (eraValues.length > 0) cards.push({ label: labels.era, values: eraValues });
   }
   const prohibitions = (fm.prohibitions ?? []).map((p) => p.trim()).filter(Boolean);
-  if (prohibitions.length > 0) cards.push({ label: "红线", values: prohibitions });
+  if (prohibitions.length > 0) cards.push({ label: labels.prohibitions, values: prohibitions });
   if (fm.fanficMode) {
-    cards.push({ label: "同人模式", values: [FANFIC_LABELS[fm.fanficMode] ?? fm.fanficMode] });
+    cards.push({ label: labels.fanficMode, values: [FANFIC_LABELS[lang][fm.fanficMode] ?? fm.fanficMode] });
   }
   return cards;
 }
@@ -128,6 +144,24 @@ export const FOUNDATION_FILE_LABELS: Record<string, string> = {
   "volume_outline.md": "卷纲规划",
   "book_rules.md": "叙事规则",
 };
+
+const FOUNDATION_FILE_LABELS_EN: Record<string, string> = {
+  "outline/story_frame.md": "Story Frame",
+  "outline/volume_map.md": "Volume Map",
+  "current_state.md": "Current State",
+  "pending_hooks.md": "Hook Pool",
+  "emotional_arcs.md": "Emotional Arcs",
+  "subplot_board.md": "Subplot Board",
+  "story_bible.md": "Story Bible",
+  "volume_outline.md": "Volume Outline",
+  "book_rules.md": "Narrative Rules",
+};
+
+// Language-aware lookup for the foundation file list. Membership stays defined
+// by FOUNDATION_FILE_LABELS (both maps share the same keys).
+export function foundationFileLabel(name: string, lang: DisplayLang = "zh"): string | undefined {
+  return lang === "en" ? FOUNDATION_FILE_LABELS_EN[name] : FOUNDATION_FILE_LABELS[name];
+}
 
 // --- current_state.md ---------------------------------------------------
 

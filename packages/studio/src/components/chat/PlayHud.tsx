@@ -165,7 +165,8 @@ export function buildAutoImageRequests(
   return requests;
 }
 
-export function buildView(run: PlayRunResponse | null): HudView | null {
+export function buildView(run: PlayRunResponse | null, lang: "zh" | "en" = "zh"): HudView | null {
+  const zh = lang === "zh";
   if (!run?.graph) return null;
   const { entities, edges, stateSlots, events } = run.graph;
   const labelOf = new Map(entities.map((e) => [e.id, e.label]));
@@ -194,7 +195,7 @@ export function buildView(run: PlayRunResponse | null): HudView | null {
       .map((e) => {
         const other = e.fromId === id ? labelOf.get(e.toId) : labelOf.get(e.fromId);
         const strength = typeof e.strength === "number" ? ` ${e.strength}` : "";
-        return { label: "关系", text: `${e.type}${strength}${other ? ` · ${other}` : ""}` };
+        return { label: zh ? "关系" : "Relation", text: `${e.type}${strength}${other ? ` · ${other}` : ""}` };
       });
 
   const locations: HudRow[] = entities
@@ -283,7 +284,7 @@ export function buildView(run: PlayRunResponse | null): HudView | null {
       return {
         id: slot.id, glyph: SLOT_GLYPH[slot.kind] ?? "•", label: slot.label, kind: slot.kind,
         value: text, ratio, note: null,
-        details: cause ? [{ label: "因为", text: cause }] : [],
+        details: cause ? [{ label: zh ? "因为" : "Because", text: cause }] : [],
       };
     });
   const latestTime = run.currentState?.timeAdvance
@@ -293,12 +294,12 @@ export function buildView(run: PlayRunResponse | null): HudView | null {
     ? {
         id: "world-time",
         glyph: "⏳",
-        label: "世界时间",
+        label: zh ? "世界时间" : "World Time",
         value: latestTime.anchor || latestTime.elapsed || "",
         note: latestTime.rationale || null,
         details: [
-          ...(latestTime.elapsed && latestTime.anchor ? [{ label: "经过", text: latestTime.elapsed }] : []),
-          ...(latestTime.synchronized ?? []).map((text) => ({ label: "同步", text })),
+          ...(latestTime.elapsed && latestTime.anchor ? [{ label: zh ? "经过" : "Elapsed", text: latestTime.elapsed }] : []),
+          ...(latestTime.synchronized ?? []).map((text) => ({ label: zh ? "同步" : "Synced", text })),
         ],
       }
     : null;
@@ -391,7 +392,7 @@ export function PlayHud(props: {
     }
   }, [base, load]);
 
-  const view = useMemo(() => buildView(run), [run]);
+  const view = useMemo(() => buildView(run, isZh ? "zh" : "en"), [run, isZh]);
   const effectiveImageSettings = props.imageSettings ?? settings;
   // The selected holding is looked up fresh from the current view, so if it
   // disappears on the next turn the panel falls back to the list automatically.

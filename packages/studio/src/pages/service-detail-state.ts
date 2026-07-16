@@ -116,25 +116,27 @@ export async function saveServiceConfig(args: {
   readonly detectedModel: string;
   readonly verifiedProbe?: ServiceDetailVerifiedProbe | null;
   readonly fetchJsonImpl?: JsonFetcher;
+  readonly lang?: "zh" | "en";
 }): Promise<{
   readonly status: ServiceDetailConnectionStatus;
   readonly detectedModel: string;
   readonly detectedConfig: ServiceDetailDetectedConfig | null;
 }> {
   const fetchJsonImpl = args.fetchJsonImpl ?? fetchJson;
+  const en = args.lang === "en";
   const trimmedKey = args.apiKey.trim();
   const trimmedBaseUrl = args.baseUrl.trim();
 
   if (!trimmedKey && !args.isCustom) {
     return {
-      status: { state: "error", message: "请先输入 API Key" },
+      status: { state: "error", message: en ? "Enter an API key first" : "请先输入 API Key" },
       detectedModel: "",
       detectedConfig: null,
     };
   }
   if (args.isCustom && !trimmedBaseUrl) {
     return {
-      status: { state: "error", message: "请先填写 Base URL" },
+      status: { state: "error", message: en ? "Enter a Base URL first" : "请先填写 Base URL" },
       detectedModel: "",
       detectedConfig: null,
     };
@@ -168,7 +170,7 @@ export async function saveServiceConfig(args: {
       }, { fetchJsonImpl });
     } catch (error) {
       return {
-        status: { state: "error", message: error instanceof Error ? error.message : "连接失败" },
+        status: { state: "error", message: error instanceof Error ? error.message : (en ? "Connection failed" : "连接失败") },
         detectedModel: "",
         detectedConfig: null,
       };
@@ -177,7 +179,7 @@ export async function saveServiceConfig(args: {
 
   if (!probe.ok) {
     return {
-      status: { state: "error", message: probe.error ?? "连接失败" },
+      status: { state: "error", message: probe.error ?? (en ? "Connection failed" : "连接失败") },
       detectedModel: "",
       detectedConfig: null,
     };

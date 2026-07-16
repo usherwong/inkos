@@ -15,7 +15,7 @@ import { CharacterSection } from "../sidebar/CharacterSection";
 import { FrontmatterCards } from "../sidebar/FrontmatterCards";
 import { PendingHooksView } from "../sidebar/PendingHooksView";
 import {
-  FOUNDATION_FILE_LABELS,
+  foundationFileLabel,
   frontmatterToCards,
   hasTableRows,
   presentCurrentState,
@@ -37,8 +37,8 @@ const streamdownPlugins = { cjk };
 // Friendly header label for an opened truth file: character files show the
 // character's name, foundation files their friendly label, everything else its
 // path as a last resort.
-function artifactLabel(file: string): string {
-  return roleFromPath(file)?.name ?? FOUNDATION_FILE_LABELS[file] ?? file;
+function artifactLabel(file: string, lang: "zh" | "en"): string {
+  return roleFromPath(file)?.name ?? foundationFileLabel(file, lang) ?? file;
 }
 
 // Read-mode body for an opened file. A few files need reader-friendly handling
@@ -50,15 +50,17 @@ function renderTruthBody(
   content: string,
   frontmatter: TruthFrontmatter | null,
   body: string | null,
+  t: TFunction,
+  lang: "zh" | "en",
 ) {
   if (file === "pending_hooks.md") {
-    return <PendingHooksView content={content} />;
+    return <PendingHooksView content={content} t={t} />;
   }
   if (file === "current_state.md") {
     const { isEmpty, body: stateBody } = presentCurrentState(content);
     return isEmpty ? (
       <p className="text-[14px] leading-6 text-muted-foreground/60 italic">
-        还没有运行状态。开始写作后，每写完一章这里会自动记录最新的故事进展。
+        {t("book.noStateYet")}
       </p>
     ) : (
       <Streamdown plugins={streamdownPlugins} mode="static">{stateBody}</Streamdown>
@@ -67,13 +69,13 @@ function renderTruthBody(
   if (file === "emotional_arcs.md" && !hasTableRows(content)) {
     return (
       <p className="text-[14px] leading-6 text-muted-foreground/60 italic">
-        还没有情感弧线记录。开始写作后，这里会记录角色在各章的情绪变化。
+        {t("book.noArcsYet")}
       </p>
     );
   }
   return (
     <>
-      <FrontmatterCards cards={frontmatterToCards(frontmatter)} />
+      <FrontmatterCards cards={frontmatterToCards(frontmatter, lang)} />
       <Streamdown plugins={streamdownPlugins} mode="static">
         {relabelOkrJargon(stripStructuralMarkers(body ?? content))}
       </Streamdown>
@@ -81,7 +83,9 @@ function renderTruthBody(
   );
 }
 
-function ArtifactView({ bookId }: { readonly bookId: string }) {
+function ArtifactView({ bookId, t }: { readonly bookId: string; readonly t: TFunction }) {
+  const isZh = t("nav.connected") === "已连接";
+  const lang: "zh" | "en" = isZh ? "zh" : "en";
   const artifactFile = useChatStore((s) => s.artifactFile);
   const artifactChapter = useChatStore((s) => s.artifactChapter);
   const closeArtifact = useChatStore((s) => s.closeArtifact);
@@ -95,8 +99,8 @@ function ArtifactView({ bookId }: { readonly bookId: string }) {
 
   const isChapter = artifactChapter !== null;
   const label = isChapter
-    ? `第 ${artifactChapter} 章`
-    : artifactFile ? artifactLabel(artifactFile) : "";
+    ? (isZh ? `第 ${artifactChapter} 章` : `Chapter ${artifactChapter}`)
+    : artifactFile ? artifactLabel(artifactFile, lang) : "";
 
   useEffect(() => {
     setEditing(false);
@@ -194,7 +198,7 @@ function ArtifactView({ bookId }: { readonly bookId: string }) {
             <Loader2 size={16} className="text-muted-foreground animate-spin" />
           </div>
         ) : content === null ? (
-          <p className="text-[14px] leading-6 text-muted-foreground/50 italic px-4 py-3">文件不存在</p>
+          <p className="text-[14px] leading-6 text-muted-foreground/50 italic px-4 py-3">{t("book.fileMissing")}</p>
         ) : editing ? (
           <textarea
             value={editContent}
@@ -203,7 +207,7 @@ function ArtifactView({ bookId }: { readonly bookId: string }) {
           />
         ) : (
           <div className="px-4 py-3 text-[15px] leading-7">
-            {renderTruthBody(isChapter ? null : artifactFile, content, frontmatter, body)}
+            {renderTruthBody(isChapter ? null : artifactFile, content, frontmatter, body, t, lang)}
           </div>
         )}
       </div>
@@ -250,11 +254,11 @@ function PanelView({ bookId, theme: _theme, t, sse }: BookSidebarProps) {
           </span>
         </div>
       )}
-      <ProgressSection sse={sse} />
+      <ProgressSection sse={sse} t={t} />
       <ChaptersSection bookId={bookId} isZh={isZh} />
-      <CharacterSection bookId={bookId} />
-      <FoundationSection bookId={bookId} />
-      <SummarySection bookId={bookId} />
+      <CharacterSection bookId={bookId} t={t} />
+      <FoundationSection bookId={bookId} t={t} />
+      <SummarySection bookId={bookId} t={t} />
     </div>
   );
 }
@@ -302,7 +306,7 @@ export function BookSidebar({ bookId, theme, t, sse }: BookSidebarProps) {
         className="absolute left-0 top-0 h-full w-1 cursor-col-resize hover:bg-primary/20 active:bg-primary/30 transition-colors z-10"
       />
       {sidebarView === "artifact" ? (
-        <ArtifactView bookId={bookId} />
+        <ArtifactView bookId={bookId} t={t} />
       ) : (
         <PanelView bookId={bookId} theme={theme} t={t} sse={sse} />
       )}
@@ -331,13 +335,13 @@ export function BookSidebarToggle({ bookId, theme, t, sse }: BookSidebarProps) {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between px-3 py-2 border-b border-border/20">
-              <span className="text-[15px] leading-6 font-medium text-muted-foreground">书籍信息</span>
+              <span className="text-[15px] leading-6 font-medium text-muted-foreground">{t("book.info")}</span>
               <button onClick={() => setOpen(false)} className="text-muted-foreground hover:text-foreground">
                 <PanelRightClose size={14} />
               </button>
             </div>
             {sidebarView === "artifact" ? (
-              <ArtifactView bookId={bookId} />
+              <ArtifactView bookId={bookId} t={t} />
             ) : (
               <PanelView bookId={bookId} theme={theme} t={t} sse={sse} />
             )}

@@ -28,6 +28,7 @@ import { useSSE } from "./hooks/use-sse";
 import { useSessionEvents } from "./hooks/use-session-events";
 import { useTheme } from "./hooks/use-theme";
 import { useI18n } from "./hooks/use-i18n";
+import { setUiLang } from "./lib/ui-lang";
 import { BRAND_FULL } from "./lib/brand";
 import { postApi, putApi, useApi } from "./hooks/use-api";
 import { Sun, Moon } from "lucide-react";
@@ -66,6 +67,12 @@ export function App() {
   useEffect(() => {
     document.documentElement.classList.toggle("dark", isDark);
   }, [isDark]);
+
+  // Mirror the UI language into the non-React module store (chat store, error
+  // copy) — those modules cannot call hooks.
+  useEffect(() => {
+    setUiLang(currentLang);
+  }, [currentLang]);
 
   useEffect(() => {
     if (project) {
@@ -346,12 +353,12 @@ export function App() {
             </div>
           )}
           {route.page === "film-studio" && (
-            <Suspense fallback={<div className="p-6 text-sm">加载创作向导…</div>}>
+            <Suspense fallback={<div className="p-6 text-sm">{t("common.loadingWizard")}</div>}>
               <FilmWizard projectId={route.projectId} nav={nav} theme={theme} t={t} sse={sse} />
             </Suspense>
           )}
           {route.page === "flow" && (
-            <Suspense fallback={<div className="p-6 text-sm">加载流程图…</div>}>
+            <Suspense fallback={<div className="p-6 text-sm">{t("common.loadingFlow")}</div>}>
               <FlowView projectId={route.projectId} nav={nav} theme={theme} t={t} />
             </Suspense>
           )}

@@ -37,11 +37,11 @@ export const DEFAULT_DETECTION: DetectionDraft = {
   maxRetries: 3,
 };
 
-export const NOTIFY_TYPES: ReadonlyArray<{ value: NotifyType; label: string }> = [
-  { value: "telegram", label: "Telegram" },
-  { value: "feishu", label: "飞书 Feishu" },
-  { value: "wechat-work", label: "企业微信" },
-  { value: "webhook", label: "Webhook" },
+export const NOTIFY_TYPES: ReadonlyArray<{ value: NotifyType; label: string; labelEn: string }> = [
+  { value: "telegram", label: "Telegram", labelEn: "Telegram" },
+  { value: "feishu", label: "飞书 Feishu", labelEn: "Feishu" },
+  { value: "wechat-work", label: "企业微信", labelEn: "WeCom" },
+  { value: "webhook", label: "Webhook", labelEn: "Webhook" },
 ];
 
 function asRecord(value: unknown): Record<string, unknown> {

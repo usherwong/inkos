@@ -8,6 +8,7 @@ import { useChatStore } from "../../store/chat";
 import { fetchJson } from "../../hooks/use-api";
 import { SidebarCard } from "./SidebarCard";
 import { FrontmatterCards } from "./FrontmatterCards";
+import type { TFunction } from "../../hooks/use-i18n";
 import {
   firstParagraph,
   frontmatterToCards,
@@ -53,9 +54,11 @@ function parseStoryBible(content: string): LegacySummary {
 
 interface SummarySectionProps {
   readonly bookId: string;
+  readonly t: TFunction;
 }
 
-export function SummarySection({ bookId }: SummarySectionProps) {
+export function SummarySection({ bookId, t }: SummarySectionProps) {
+  const lang: "zh" | "en" = t("nav.connected") === "已连接" ? "zh" : "en";
   // Phase 5 layout: structured frontmatter + prose, sourced from story_frame.md.
   const [frontmatter, setFrontmatter] = useState<TruthFrontmatter | null>(null);
   const [worldOverview, setWorldOverview] = useState("");
@@ -95,7 +98,7 @@ export function SummarySection({ bookId }: SummarySectionProps) {
     };
   }, [bookId, bookDataVersion]);
 
-  const cards = frontmatterToCards(frontmatter);
+  const cards = frontmatterToCards(frontmatter, lang);
 
   if (cards.length === 0 && !worldOverview && !legacy) return null;
 
@@ -103,14 +106,14 @@ export function SummarySection({ bookId }: SummarySectionProps) {
     return (
       <>
         {legacy.world && (
-          <SidebarCard title="世界观">
+          <SidebarCard title={t("book.worldview")}>
             <Streamdown className={SIDEBAR_MD_CLASS} plugins={streamdownPlugins}>
               {legacy.world}
             </Streamdown>
           </SidebarCard>
         )}
         {(legacy.protagonist || legacy.cast) && (
-          <SidebarCard title="角色">
+          <SidebarCard title={t("book.characters")}>
             {legacy.protagonist && (
               <Streamdown className={SIDEBAR_MD_CLASS} plugins={streamdownPlugins}>
                 {legacy.protagonist}
@@ -136,20 +139,20 @@ export function SummarySection({ bookId }: SummarySectionProps) {
       onClick={() => openArtifact("outline/story_frame.md")}
       className="mt-2 text-[15px] leading-6 text-primary hover:underline font-['SimSun','Songti_SC','STSong',serif]"
     >
-      查看完整设定 →
+      {t("book.viewFullSetting")}
     </button>
   );
 
   return (
     <>
       {cards.length > 0 && (
-        <SidebarCard title="故事基石">
+        <SidebarCard title={t("book.storyFrame")}>
           <FrontmatterCards cards={cards} />
           {!worldOverview && openFull}
         </SidebarCard>
       )}
       {worldOverview && (
-        <SidebarCard title="世界观">
+        <SidebarCard title={t("book.worldview")}>
           <Streamdown className={SIDEBAR_MD_CLASS} plugins={streamdownPlugins}>
             {worldOverview}
           </Streamdown>

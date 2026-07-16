@@ -2,8 +2,11 @@ import { useEffect, useState } from "react";
 import type { SSEMessage } from "../../hooks/use-sse";
 import { Loader2, Check } from "lucide-react";
 import { cn } from "../../lib/utils";
+import type { TFunction } from "../../hooks/use-i18n";
 import { SidebarCard } from "./SidebarCard";
 
+// The zh step names double as match keys against backend log/SSE messages, so
+// they must stay exactly as emitted; STEP_LABELS_EN only changes the display.
 const INIT_BOOK_STEPS = [
   "生成基础设定",
   "保存书籍配置",
@@ -22,13 +25,30 @@ const WRITE_CHAPTER_STEPS = [
   "更新章节索引与快照",
 ] as const;
 
+const STEP_LABELS_EN: Record<string, string> = {
+  "生成基础设定": "Generating foundation",
+  "保存书籍配置": "Saving book config",
+  "写入基础设定文件": "Writing foundation files",
+  "初始化控制文档": "Initializing control docs",
+  "创建初始快照": "Creating initial snapshot",
+  "准备章节输入": "Preparing chapter input",
+  "撰写章节草稿": "Drafting chapter",
+  "落盘最终章节": "Saving final chapter",
+  "生成最终真相文件": "Generating truth files",
+  "校验真相文件变更": "Validating truth changes",
+  "同步记忆索引": "Syncing memory index",
+  "更新章节索引与快照": "Updating index & snapshot",
+};
+
 type StepStatus = "pending" | "active" | "done";
 
 interface ProgressSectionProps {
   readonly sse: { messages: ReadonlyArray<SSEMessage>; connected: boolean };
+  readonly t: TFunction;
 }
 
-export function ProgressSection({ sse }: ProgressSectionProps) {
+export function ProgressSection({ sse, t }: ProgressSectionProps) {
+  const isZh = t("nav.connected") === "已连接";
   const [operation, setOperation] = useState<"idle" | "init" | "write">("idle");
   const [completedSteps, setCompletedSteps] = useState<Set<string>>(new Set());
   const [activeStep, setActiveStep] = useState<string | null>(null);
@@ -76,7 +96,7 @@ export function ProgressSection({ sse }: ProgressSectionProps) {
   if (!steps) return null;
 
   return (
-    <SidebarCard title="执行">
+    <SidebarCard title={t("book.execution")}>
       <ul className="space-y-2">
         {steps.map((step, i) => {
           const status: StepStatus = completedSteps.has(step) ? "done"
@@ -91,7 +111,7 @@ export function ProgressSection({ sse }: ProgressSectionProps) {
                 status === "active" && "text-foreground font-medium",
                 status === "pending" && "text-muted-foreground/50",
               )}>
-                {step}
+                {isZh ? step : STEP_LABELS_EN[step] ?? step}
               </span>
             </li>
           );

@@ -215,6 +215,7 @@ export function ServiceDetailPage({ serviceId, nav }: { serviceId: string; nav: 
         temperature,
         detectedModel,
         verifiedProbe,
+        lang,
       });
       if (result.status.state === "connected") {
         if (result.detectedConfig?.apiFormat) setApiFormat(result.detectedConfig.apiFormat);
