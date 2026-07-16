@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { Check, Eye, EyeOff, Loader2, Plus, Search, X } from "lucide-react";
-import { GROUP_DESCRIPTIONS, GROUP_LABELS, GROUP_ORDER, GROUP_SHORT_LABELS } from "../constants/service-groups";
+import { GROUP_ORDER } from "../constants/service-groups";
 import { fetchJson } from "../hooks/use-api";
+import { useI18n, type StringKey } from "../hooks/use-i18n";
 import { useServiceStore } from "../store/service";
 import type { EndpointGroup, ServiceInfo } from "../store/service";
 import { ServiceQuickLinks, getServiceQuickLinks } from "../components/ServiceQuickLinks";
@@ -11,6 +12,21 @@ interface Nav {
   toDashboard: () => void;
   toServiceDetail: (id: string) => void;
 }
+
+const GROUP_LABEL_KEYS: Record<EndpointGroup, StringKey> = {
+  overseas: "svc.group.overseas",
+  china: "svc.group.china",
+  aggregator: "svc.group.aggregator",
+  local: "svc.group.local",
+  codingPlan: "svc.group.codingPlan",
+};
+const GROUP_SHORT_KEYS: Record<EndpointGroup, StringKey> = {
+  overseas: "svc.groupShort.overseas",
+  china: "svc.groupShort.china",
+  aggregator: "svc.groupShort.aggregator",
+  local: "svc.groupShort.local",
+  codingPlan: "svc.groupShort.codingPlan",
+};
 
 function SkeletonCard() {
   return (
@@ -25,6 +41,7 @@ function SkeletonCard() {
 }
 
 function ServiceCard({ svc, onClick }: { svc: ServiceInfo; onClick: () => void }) {
+  const { t } = useI18n();
   const quickLinks = getServiceQuickLinks(svc.service);
   return (
     <div
@@ -41,7 +58,7 @@ function ServiceCard({ svc, onClick }: { svc: ServiceInfo; onClick: () => void }
           <span className={`h-1.5 w-1.5 rounded-full shrink-0 ${svc.connected ? "bg-emerald-500" : "bg-muted-foreground/30"}`} />
         </div>
         <span className="text-xs text-muted-foreground/60">
-          {svc.connected ? "已连接" : "未配置"}
+          {svc.connected ? t("svc.connected") : t("svc.notConfigured")}
         </span>
       </button>
       {quickLinks.length > 0 && (
@@ -67,6 +84,7 @@ interface CoverConfigPayload {
 }
 
 function CoverConfigCard() {
+  const { t } = useI18n();
   const [providers, setProviders] = useState<readonly CoverProviderInfo[]>([]);
   const [service, setService] = useState("kkaiapi");
   const [model, setModel] = useState("gpt-image-2");
@@ -92,7 +110,7 @@ function CoverConfigCard() {
       .catch((error) => {
         if (cancelled) return;
         setStatus("error");
-        setMessage(error instanceof Error ? error.message : "读取封面配置失败");
+        setMessage(error instanceof Error ? error.message : t("svc.coverLoadFailed"));
       });
     return () => { cancelled = true; };
   }, []);
@@ -136,10 +154,10 @@ function CoverConfigCard() {
         body: JSON.stringify({ service: provider.service, model }),
       });
       setStatus("saved");
-      setMessage("封面配置已保存");
+      setMessage(t("svc.coverSaved"));
     } catch (error) {
       setStatus("error");
-      setMessage(error instanceof Error ? error.message : "保存封面配置失败");
+      setMessage(error instanceof Error ? error.message : t("svc.coverSaveFailed"));
     }
   };
 
@@ -149,21 +167,21 @@ function CoverConfigCard() {
     <section className="rounded-xl border border-border/50 bg-card/50 p-4 space-y-3">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h2 className="text-sm font-medium text-foreground">封面生成</h2>
+          <h2 className="text-sm font-medium text-foreground">{t("svc.coverTitle")}</h2>
           <p className="mt-1 text-xs text-muted-foreground/70">
-            只配置封面通道和模型；封面尺寸由短篇封面提示词和内部默认处理。
+            {t("svc.coverDesc")}
           </p>
         </div>
         {selected?.connected && (
           <span className="rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-medium text-emerald-500">
-            已有密钥
+            {t("svc.hasKey")}
           </span>
         )}
       </div>
 
       <div className="grid gap-3 md:grid-cols-2">
         <label className="space-y-1.5">
-          <span className="block text-xs font-medium text-muted-foreground/70">服务</span>
+          <span className="block text-xs font-medium text-muted-foreground/70">{t("svc.service")}</span>
           <select
             value={service}
             onChange={(event) => handleServiceChange(event.target.value)}
@@ -175,7 +193,7 @@ function CoverConfigCard() {
           </select>
         </label>
         <label className="space-y-1.5">
-          <span className="block text-xs font-medium text-muted-foreground/70">封面模型</span>
+          <span className="block text-xs font-medium text-muted-foreground/70">{t("svc.coverModel")}</span>
           <select
             value={model}
             onChange={(event) => setModel(event.target.value)}
@@ -215,7 +233,7 @@ function CoverConfigCard() {
           className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3.5 py-2 text-xs text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
         >
           {status === "saving" && <Loader2 size={12} className="animate-spin" />}
-          保存封面配置
+          {t("svc.saveCover")}
         </button>
         {selected?.baseUrl && (
           <span className="text-xs text-muted-foreground/60">
@@ -233,6 +251,7 @@ function CoverConfigCard() {
 }
 
 export function ServiceListPage({ nav }: { nav: Nav }) {
+  const { t } = useI18n();
   const services = useServiceStore((s) => s.services);
   const loading = useServiceStore((s) => s.servicesLoading);
   const fetchServices = useServiceStore((s) => s.fetchServices);
@@ -314,13 +333,13 @@ export function ServiceListPage({ nav }: { nav: Nav }) {
           onClick={nav.toDashboard}
           className="inline-flex items-center rounded-lg border border-border/50 bg-card/60 px-3 py-1.5 font-medium text-foreground hover:bg-secondary/50 transition-colors"
         >
-          首页
+          {t("svc.home")}
         </button>
         <span className="text-border">/</span>
-        <span className="text-foreground">服务商管理</span>
+        <span className="text-foreground">{t("svc.title")}</span>
       </div>
 
-      <h1 className="font-serif text-2xl">服务商管理</h1>
+      <h1 className="font-serif text-2xl">{t("svc.title")}</h1>
 
       <ServiceConfigSourceCard onChange={() => { void refreshServices(); }} />
 
@@ -332,14 +351,14 @@ export function ServiceListPage({ nav }: { nav: Nav }) {
           type="text"
           value={query}
           onChange={(event) => setQuery(event.target.value)}
-          placeholder="搜索服务商"
+          placeholder={t("svc.searchPlaceholder")}
           className="w-full rounded-lg border border-border/60 bg-background py-2 pl-9 pr-9 text-sm outline-none focus:border-primary/50"
         />
         {query && (
           <button
             onClick={() => setQuery("")}
             className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground/50 hover:text-muted-foreground"
-            aria-label="清空搜索"
+            aria-label={t("svc.clearSearch")}
           >
             <X size={14} />
           </button>
@@ -356,7 +375,7 @@ export function ServiceListPage({ nav }: { nav: Nav }) {
               : "border-border/60 text-muted-foreground hover:bg-secondary/50",
           ].join(" ")}
         >
-          全部 {bankServices.length}
+          {t("svc.all")} {bankServices.length}
         </button>
         {GROUP_ORDER.map((group) => {
           const selected = selectedGroups.has(group);
@@ -372,7 +391,7 @@ export function ServiceListPage({ nav }: { nav: Nav }) {
               ].join(" ")}
             >
               {selected && <Check size={12} />}
-              {GROUP_SHORT_LABELS[group]} {groupCounts[group]}
+              {t(GROUP_SHORT_KEYS[group])} {groupCounts[group]}
             </button>
           );
         })}
@@ -381,7 +400,7 @@ export function ServiceListPage({ nav }: { nav: Nav }) {
             onClick={() => setSelectedGroups(new Set())}
             className="inline-flex items-center rounded-full px-3 py-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
           >
-            清除筛选
+            {t("svc.clearFilter")}
           </button>
         )}
       </div>
@@ -392,7 +411,7 @@ export function ServiceListPage({ nav }: { nav: Nav }) {
           checked={onlyConnected}
           onChange={(event) => setOnlyConnected(event.target.checked)}
         />
-        <span>只看已连接 ({connectedCount})</span>
+        <span>{t("svc.onlyConnected")} ({connectedCount})</span>
       </label>
 
       <div className="h-px bg-border/30" />
@@ -410,11 +429,11 @@ export function ServiceListPage({ nav }: { nav: Nav }) {
           <section key={group} className="space-y-3">
             <div className="space-y-1">
               <h2 className="text-xs font-medium uppercase tracking-wider text-muted-foreground/70">
-                {GROUP_LABELS[group]}
+                {t(GROUP_LABEL_KEYS[group])}
               </h2>
-              {GROUP_DESCRIPTIONS[group] && (
+              {group === "aggregator" && (
                 <p className="text-xs text-muted-foreground/60">
-                  {GROUP_DESCRIPTIONS[group]}
+                  {t("svc.groupDesc.aggregator")}
                 </p>
               )}
             </div>
@@ -434,7 +453,7 @@ export function ServiceListPage({ nav }: { nav: Nav }) {
       {showCustomSection && (
         <section className="space-y-3">
           <h2 className="text-xs font-medium uppercase tracking-wider text-muted-foreground/70">
-            自定义服务
+            {t("svc.customSection")}
           </h2>
           <div className="grid grid-cols-2 gap-3">
             {filteredCustom.map((svc) => (
@@ -450,7 +469,7 @@ export function ServiceListPage({ nav }: { nav: Nav }) {
                 className="flex min-h-[92px] flex-col items-center justify-center gap-1.5 rounded-lg border border-dashed border-border/40 p-5 text-muted-foreground/60 transition-all hover:border-primary/30 hover:text-muted-foreground"
               >
                 <Plus size={18} />
-                <span className="text-xs">自定义服务</span>
+                <span className="text-xs">{t("svc.addCustom")}</span>
               </button>
             )}
           </div>
@@ -459,7 +478,7 @@ export function ServiceListPage({ nav }: { nav: Nav }) {
 
       {!loading && filtered.length === 0 && filteredCustom.length === 0 && !canCreateCustom && (
         <div className="rounded-lg border border-dashed border-border/40 p-8 text-center text-sm text-muted-foreground">
-          没有匹配的服务商
+          {t("svc.noMatch")}
         </div>
       )}
     </div>

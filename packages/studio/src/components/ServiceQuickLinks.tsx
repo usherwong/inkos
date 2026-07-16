@@ -1,29 +1,30 @@
 import { ExternalLink } from "lucide-react";
+import { useI18n, type StringKey } from "../hooks/use-i18n";
 
 interface ServiceQuickLink {
-  readonly label: string;
+  readonly label: StringKey;
   readonly href: string;
 }
 
 const SERVICE_QUICK_LINKS: Record<string, ReadonlyArray<ServiceQuickLink>> = {
   kimicode: [
-    { label: "官网", href: "https://www.kimi.com?aff=inkos" },
+    { label: "svc.link.website", href: "https://www.kimi.com?aff=inkos" },
   ],
   kimiCodingPlan: [
-    { label: "官网", href: "https://www.kimi.com?aff=inkos" },
+    { label: "svc.link.website", href: "https://www.kimi.com?aff=inkos" },
   ],
   kkaiapi: [
-    { label: "官网", href: "https://kkaiapi.com/" },
-    { label: "API 文档", href: "https://kkaiapi.com/docs" },
-    { label: "模型/价格", href: "https://kkaiapi.com/models" },
+    { label: "svc.link.website", href: "https://kkaiapi.com/" },
+    { label: "svc.link.apiDocs", href: "https://kkaiapi.com/docs" },
+    { label: "svc.link.modelsPricing", href: "https://kkaiapi.com/models" },
   ],
   moonshot: [
-    { label: "开放平台", href: "https://platform.kimi.com?aff=inkos" },
+    { label: "svc.link.openPlatform", href: "https://platform.kimi.com?aff=inkos" },
   ],
   openrouter: [
-    { label: "API Keys", href: "https://openrouter.ai/keys" },
-    { label: "模型", href: "https://openrouter.ai/models" },
-    { label: "文档", href: "https://openrouter.ai/docs/api-reference/overview" },
+    { label: "svc.link.apiKeys", href: "https://openrouter.ai/keys" },
+    { label: "svc.link.models", href: "https://openrouter.ai/models" },
+    { label: "svc.link.docs", href: "https://openrouter.ai/docs/api-reference/overview" },
   ],
 };
 
@@ -40,6 +41,7 @@ export function ServiceQuickLinks({
   readonly variant?: "card" | "detail";
   readonly className?: string;
 }) {
+  const { t } = useI18n();
   const links = getServiceQuickLinks(serviceId);
   if (links.length === 0) return null;
 
@@ -52,7 +54,7 @@ export function ServiceQuickLinks({
         className,
       ].filter(Boolean).join(" ")}
     >
-      {!compact && <span className="mr-0.5">配置入口</span>}
+      {!compact && <span className="mr-0.5">{t("svc.link.entry")}</span>}
       {links.map((link) => (
         <a
           key={link.href}
@@ -65,7 +67,7 @@ export function ServiceQuickLinks({
             compact ? "px-1.5 py-0.5" : "px-2 py-1",
           ].join(" ")}
         >
-          {link.label}
+          {t(link.label)}
           <ExternalLink size={compact ? 10 : 11} />
         </a>
       ))}
